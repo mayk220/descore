@@ -1,0 +1,554 @@
+body {
+  margin: 0;
+  background: #0b1016;
+  font-family: Roboto, Arial, sans-serif;
+  color: #e6edf3;
+  line-height: 1.6;
+}
+
+.profile-page .main-content {
+  max-width: 1100px;
+  margin: 30px auto;
+  padding: 0 20px;
+}
+
+.profile-card,
+.profile-stats,
+.activity,
+.favorites,
+.achievements,
+.franchises,
+.comment-box {
+  margin-bottom: 25px;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #26333d;
+  background: linear-gradient(145deg, #18232d, #131a22);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.24);
+}
+
+.history-button,
+.back-button {
+  border: 0;
+  color: #081217;
+  background: #53d6cf;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+.history-button {
+  margin-top: 15px;
+  padding: 10px 16px;
+  border-radius: 5px;
+}
+.history-button:hover {
+  background: #75e4dc;
+}
+
+.game-history {
+  padding: 20px 0;
+}
+.history-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid #2e3d48;
+  padding-bottom: 14px;
+}
+.history-heading h1 {
+  margin: 0;
+  font-size: 1.7rem;
+  color: #fff;
+}
+.back-button {
+  padding: 8px 12px;
+  border-radius: 5px;
+}
+.history-count {
+  color: #8fa5b4;
+}
+.history-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px 12px;
+}
+.history-card {
+  overflow: hidden;
+  border: 1px solid #2b3a46;
+  border-radius: 8px;
+  background: #1b2731;
+  color: #e6edf3;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+}
+.history-card-main {
+  position: relative;
+  display: flex;
+  gap: 16px;
+  min-height: 156px;
+  padding: 16px;
+}
+.history-card-main img {
+  width: 82px;
+  height: 124px;
+  flex: 0 0 auto;
+  border-radius: 5px;
+  object-fit: cover;
+  background: #26333d;
+}
+.favorite-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #3a4d59;
+  border-radius: 50%;
+  background: #111a21;
+  color: #78909c;
+  cursor: pointer;
+  font-size: 1.15rem;
+  line-height: 1;
+}
+.favorite-button:hover,
+.favorite-button.is-favorite {
+  border-color: #f5c451;
+  color: #f5c451;
+}
+.history-card-main h2 {
+  margin: 8px 0 4px;
+  font-size: 1rem;
+  line-height: 1.3;
+}
+.review-date {
+  margin: 0;
+  color: #8fa5b4;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+.rating-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+.rating-line span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #3bd69a;
+  color: #071b16;
+  font-weight: bold;
+}
+.details-button {
+  display: block;
+  margin-top: 10px;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid #53d6cf;
+  background: transparent;
+  color: #53d6cf;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+.rating-details {
+  margin-top: 10px;
+  padding: 8px;
+  border: 1px solid #304652;
+  border-radius: 4px;
+  background: #111a21;
+}
+.rating-detail {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: #9fb2bf;
+  font-size: 0.78rem;
+}
+.rating-detail strong {
+  color: #53d6cf;
+}
+.rating-detail-group + .rating-detail-group {
+  margin-top: 10px;
+}
+.aspect-review {
+  margin: 5px 0 0;
+  color: #c4d0d7;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+.rating-editor {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #304652;
+  border-radius: 6px;
+  background: #111a21;
+}
+.rating-editor > label,
+.rating-editor-field label {
+  display: block;
+  margin: 8px 0 4px;
+  color: #c4d0d7;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.rating-editor input,
+.rating-editor textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #405461;
+  border-radius: 4px;
+  padding: 7px;
+  background: #1b2731;
+  color: #e6edf3;
+  font: inherit;
+  font-size: 0.8rem;
+}
+.rating-editor textarea {
+  min-height: 52px;
+  margin-top: 5px;
+  resize: vertical;
+}
+.rating-editor-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.rating-editor-actions button {
+  border: 0;
+  border-radius: 4px;
+  padding: 7px 10px;
+  color: #081217;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.save-rating-button {
+  background: #53d6cf;
+}
+.cancel-rating-button {
+  background: #8fa5b4;
+}
+.history-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px;
+  border-top: 1px solid #2b3a46;
+  background: #16212a;
+}
+.history-card-actions button {
+  border: 0;
+  border-bottom: 1px solid #53d6cf;
+  padding: 0 0 2px;
+  background: transparent;
+  color: #53d6cf;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+.history-card-actions button:last-child {
+  color: #ff8a80;
+  border-color: #ff8a80;
+}
+.game-review {
+  margin-top: 12px;
+  color: #c4d0d7;
+  font-size: 0.82rem;
+}
+.game-review p {
+  margin: 6px 0 0;
+}
+
+.profile-card {
+  position: relative;
+  width: min(70vw, 1100px);
+  margin-right: auto;
+  margin-left: auto;
+  min-height: 230px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  background-position: center;
+  background-size: cover;
+}
+.profile-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.82));
+}
+.profile-card-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  width: 100%;
+}
+.avatar {
+  position: relative;
+  width: 96px;
+  height: 96px;
+}
+.avatar-img {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.avatar > i {
+  display: none;
+}
+.profile-info h2 {
+  margin: 0;
+  color: #fff;
+}
+.profile-info p {
+  margin: 5px 0;
+  color: #ccc;
+}
+.favorite-games {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 18px;
+}
+.favorite-game {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  color: #e6edf3;
+}
+.favorite-game img {
+  width: 100px;
+  height: 138px;
+  flex: 0 0 auto;
+  border-radius: 6px;
+  object-fit: cover;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+}
+.favorite-game span {
+  overflow-wrap: anywhere;
+  font-weight: 600;
+}
+.profile-stats h2,
+.activity h2,
+.favorites h2,
+.achievements h2,
+.franchises h2,
+.comment-box h2 {
+  margin: 0 0 15px;
+  color: #00bcd4;
+}
+.profile-stats .value {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.achievements-block {
+  margin-top: 15px;
+}
+.achievement-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.achievement-card img {
+  width: 60px;
+  border-radius: 8px;
+}
+.franchise-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 15px;
+}
+.franchise-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  border-radius: 8px;
+  background: #2c2c2c;
+  color: #888;
+}
+
+.comment-tools {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.comment-tools button {
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 4px;
+  background: #2c2c2c;
+  color: #eee;
+  cursor: pointer;
+}
+.comment-tools button:hover {
+  background: #3a3a3a;
+}
+.comment-editor {
+  width: 100%;
+  min-height: 100px;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #555;
+  border-radius: 5px;
+  background: #2c2c2c;
+  color: #eee;
+  font: inherit;
+}
+.comment-editor:empty::before {
+  content: attr(data-placeholder);
+  color: #888;
+  pointer-events: none;
+}
+.comment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.comment-actions button {
+  padding: 8px 15px;
+  border: 0;
+  border-radius: 5px;
+  color: #fff;
+  cursor: pointer;
+}
+.write-btn {
+  background: #4caf50;
+}
+.preview-btn {
+  background: #2196f3;
+}
+.offtopic-btn {
+  background: #f44336;
+}
+.offtopic-btn.is-active {
+  box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.35);
+}
+.published-comments {
+  margin-top: 25px;
+}
+.published-comments h3 {
+  margin: 0 0 12px;
+  color: #00bcd4;
+}
+.published-comment {
+  position: relative;
+  margin-bottom: 12px;
+  padding: 14px;
+  border: 1px solid #304652;
+  border-radius: 6px;
+  background: #18232d;
+}
+.delete-comment-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #8fa5b4;
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+.delete-comment-button:hover {
+  background: rgba(244, 67, 54, 0.16);
+  color: #ff8a80;
+}
+.comment-delete-confirm {
+  position: absolute;
+  top: 36px;
+  right: 8px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid #405461;
+  border-radius: 5px;
+  background: #111a21;
+  color: #e6edf3;
+  font-size: 0.75rem;
+}
+.comment-delete-confirm button {
+  border: 0;
+  border-radius: 3px;
+  padding: 3px 6px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.7rem;
+}
+.comment-delete-confirm button:first-of-type {
+  background: #f44336;
+  color: #fff;
+}
+.comment-delete-confirm button:last-of-type {
+  background: #405461;
+  color: #fff;
+}
+.published-comment-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: #8fa5b4;
+  font-size: 0.8rem;
+}
+.comment-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.published-comment-meta strong {
+  color: #fff;
+}
+.published-comment-meta em {
+  color: #f5c451;
+  font-style: normal;
+}
+.published-comment-body {
+  white-space: pre-wrap;
+}
+.profile-page .footer {
+  margin-top: 40px;
+  padding: 15px;
+  background: #1a1a1a;
+  color: #ccc;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+@media (max-width: 576px) {
+  .profile-card {
+    width: 100%;
+    min-height: 300px;
+  }
+  .profile-card-content {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .history-heading {
+    align-items: flex-start;
+    flex-direction: column-reverse;
+  }
+  .history-grid {
+    grid-template-columns: 1fr;
+  }
+  .comment-actions button {
+    flex: 1 1 calc(50% - 10px);
+  }
+}
