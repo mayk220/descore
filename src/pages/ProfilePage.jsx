@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import Header from "../components/Header";
 import AccountModal from "../components/AccountModal";
 import heroImage from "../assets/hero.png";
-import "../styles/profile.css";
+import styles from "../styles/ProfilePage.module.css";
 
 const avatarUrl =
   "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR15psFaVkvp5kMTV8iP7FVpJdoK81GUN4ES3GHd4xPSwPpp4XDIRFPMjWa&s=10";
@@ -277,7 +277,7 @@ function ProfilePage() {
   }
 
   return (
-    <div className="profile-page">
+    <div className={styles["profile-page"]}>
       <Header isRegistered={isRegistered} onAccountClick={() => setIsAccountOpen(true)} />
       <AccountModal
         isOpen={isAccountOpen}
@@ -285,37 +285,48 @@ function ProfilePage() {
         onRegistered={() => setIsRegistered(true)}
       />
 
-      <main className="main-content">
-        <section className="profile-card" style={{ backgroundImage: `url(${heroImage})` }}>
-          <div className="profile-card-content">
-            <div className="avatar">
-              <img src={avatarUrl} alt="Аватар" className="avatar-img" />
-              <i className="fa-solid fa-circle-user fa-5x"></i>
+      <main className={styles["main-content"]}>
+        <section
+          className={styles["profile-card"]}
+          style={{ backgroundImage: `url(${heroImage})` }}
+        >
+          <div className={styles["profile-card-content"]}>
+            <div className={styles["avatar"]}>
+              <img src={avatarUrl} alt="Аватар" className={styles["avatar-img"]} />
+              <i
+                className={
+                  styles["fa-solid"] + " " + styles["fa-circle-user"] + " " + styles["fa-5x"]
+                }
+              ></i>
             </div>
-            <div className="profile-info">
+            <div className={styles["profile-info"]}>
               <h2>{username}</h2>
-              <p className="profile-activity">Активність: 3 тижні і 6 днів</p>
-              <p className="joined">Приєднався: вересень 2026</p>
+              <p className={styles["profile-activity"]}>Активність: 3 тижні і 6 днів</p>
+              <p className={styles["joined"]}>Приєднався: вересень 2026</p>
             </div>
           </div>
         </section>
 
         {isHistoryOpen ? (
-          <section className="game-history">
-            <div className="history-heading">
-              <button type="button" className="back-button" onClick={() => setIsHistoryOpen(false)}>
+          <section className={styles["game-history"]}>
+            <div className={styles["history-heading"]}>
+              <button
+                type="button"
+                className={styles["back-button"]}
+                onClick={() => setIsHistoryOpen(false)}
+              >
                 ← Профіль
               </button>
               <h1>Мої оцінки та відгуки</h1>
             </div>
-            <p className="history-count">{historyGames.length} оцінки в іграх</p>
-            <div className="history-grid">
+            <p className={styles["history-count"]}>{historyGames.length} оцінки в іграх</p>
+            <div className={styles["history-grid"]}>
               {historyGames.map((game) => (
-                <article className="history-card" key={game.title}>
-                  <div className="history-card-main">
+                <article className={styles["history-card"]} key={game.title}>
+                  <div className={styles["history-card-main"]}>
                     <button
                       type="button"
-                      className={`favorite-button ${favoriteGames.includes(game.title) ? "is-favorite" : ""}`}
+                      className={`${styles["favorite-button"]} ${favoriteGames.includes(game.title) ? styles["is-favorite"] : ""}`}
                       aria-label={
                         favoriteGames.includes(game.title)
                           ? `Прибрати ${game.title} з улюбленого`
@@ -334,8 +345,8 @@ function ProfilePage() {
                     <img src={game.image} alt={game.title} />
                     <div>
                       <h2>{game.title}</h2>
-                      <p className="review-date">{formatRatedDate(game.date)}</p>
-                      <div className="rating-line">
+                      <p className={styles["review-date"]}>{formatRatedDate(game.date)}</p>
+                      <div className={styles["rating-line"]}>
                         <span>{game.rating}</span> Моя оцінка
                       </div>
                       {editingTitle === game.title && editingForm ? (
@@ -361,7 +372,7 @@ function ProfilePage() {
                         <>
                           <button
                             type="button"
-                            className="details-button"
+                            className={styles["details-button"]}
                             onClick={() =>
                               setExpandedGame(expandedGame === game.title ? null : game.title)
                             }
@@ -369,17 +380,17 @@ function ProfilePage() {
                             Подивитись детально
                           </button>
                           {expandedGame === game.title && (
-                            <div className="rating-details">
+                            <div className={styles["rating-details"]}>
                               {Object.entries(game.details).map(([aspect, rating]) => {
                                 const [label, reviewKey] = aspectLabels[aspect] || [aspect, ""];
                                 const review = game.reviews?.[reviewKey]?.trim();
                                 return (
-                                  <div className="rating-detail-group" key={aspect}>
-                                    <div className="rating-detail">
+                                  <div className={styles["rating-detail-group"]} key={aspect}>
+                                    <div className={styles["rating-detail"]}>
                                       <span>{label}</span>
                                       <strong>{rating}/10</strong>
                                     </div>
-                                    {review && <p className="aspect-review">{review}</p>}
+                                    {review && <p className={styles["aspect-review"]}>{review}</p>}
                                   </div>
                                 );
                               })}
@@ -389,7 +400,7 @@ function ProfilePage() {
                       )}
                     </div>
                   </div>
-                  <div className="history-card-actions">
+                  <div className={styles["history-card-actions"]}>
                     <button type="button" onClick={() => editRating(game)}>
                       Редагувати оцінку
                     </button>
@@ -403,38 +414,38 @@ function ProfilePage() {
           </section>
         ) : (
           <>
-            <section className="profile-stats">
+            <section className={styles["profile-stats"]}>
               <h2>Моя активність</h2>
               <ul>
                 <li>
-                  Оцінок ігор: <span className="value">{ratedGamesCount}</span>
+                  Оцінок ігор: <span className={styles["value"]}>{ratedGamesCount}</span>
                 </li>
                 <li>
-                  Відгуків: <span className="value">{reviewedGamesCount}</span>
+                  Відгуків: <span className={styles["value"]}>{reviewedGamesCount}</span>
                 </li>
                 <li>
-                  Улюблені жанри: <span className="value">RPG, Metroidvania</span>
+                  Улюблені жанри: <span className={styles["value"]}>RPG, Metroidvania</span>
                 </li>
               </ul>
               <button
                 type="button"
-                className="history-button"
+                className={styles["history-button"]}
                 onClick={() => setIsHistoryOpen(true)}
               >
                 Історія ігор
               </button>
             </section>
 
-            <section className="favorites">
+            <section className={styles["favorites"]}>
               <h2>Улюблене</h2>
               {favoriteGames.length === 0 ? (
                 <p>Список улюбленого пустий</p>
               ) : (
-                <div className="favorite-games">
+                <div className={styles["favorite-games"]}>
                   {historyGames
                     .filter((game) => favoriteGames.includes(game.title))
                     .map((game) => (
-                      <div className="favorite-game" key={game.title}>
+                      <div className={styles["favorite-game"]} key={game.title}>
                         <img src={game.image} alt={game.title} />
                         <span>{game.title}</span>
                       </div>
@@ -443,11 +454,11 @@ function ProfilePage() {
               )}
             </section>
 
-            <section className="achievements">
+            <section className={styles["achievements"]}>
               <h2>Досягнення</h2>
-              <div className="achievements-block">
+              <div className={styles["achievements-block"]}>
                 <h3>Загальні</h3>
-                <div className="achievement-card">
+                <div className={styles["achievement-card"]}>
                   <img
                     src="https://images.stopgame.ru/uploads/users/2021/161162/00799.tcDEah-.jpg"
                     alt="Досягнення"
@@ -455,23 +466,23 @@ function ProfilePage() {
                   <p>50 оцінених ігор</p>
                 </div>
               </div>
-              <div className="achievements-block">
+              <div className={styles["achievements-block"]}>
                 <h3>Жанрові</h3>
                 <p>Немає досягнень</p>
               </div>
             </section>
 
-            <section className="franchises">
+            <section className={styles["franchises"]}>
               <h2>Франшизи</h2>
-              <div className="franchise-grid">
-                <div className="franchise-card">[Картинка франшизи]</div>
-                <div className="franchise-card">[Картинка франшизи]</div>
-                <div className="franchise-card">[Картинка франшизи]</div>
+              <div className={styles["franchise-grid"]}>
+                <div className={styles["franchise-card"]}>[Картинка франшизи]</div>
+                <div className={styles["franchise-card"]}>[Картинка франшизи]</div>
+                <div className={styles["franchise-card"]}>[Картинка франшизи]</div>
               </div>
             </section>
-            <section className="comment-box">
+            <section className={styles["comment-box"]}>
               <h2>Твій коментар</h2>
-              <div className="comment-tools">
+              <div className={styles["comment-tools"]}>
                 <button
                   type="button"
                   title="Жирний"
@@ -502,33 +513,33 @@ function ProfilePage() {
               </div>
               <div
                 ref={commentEditorRef}
-                className="comment-editor"
+                className={styles["comment-editor"]}
                 contentEditable
                 role="textbox"
                 aria-label="Текст коментаря"
                 data-placeholder="Текст коментаря"
                 suppressContentEditableWarning
               />
-              <div className="comment-actions">
-                <button type="button" className="write-btn" onClick={submitComment}>
+              <div className={styles["comment-actions"]}>
+                <button type="button" className={styles["write-btn"]} onClick={submitComment}>
                   Написати
                 </button>
                 <button
                   type="button"
-                  className={`offtopic-btn ${isOfftopic ? "is-active" : ""}`}
+                  className={`${styles["offtopic-btn"]} ${isOfftopic ? styles["is-active"] : ""}`}
                   onClick={() => setIsOfftopic((current) => !current)}
                 >
                   Оффтоп
                 </button>
               </div>
               {comments.length > 0 && (
-                <div className="published-comments">
+                <div className={styles["published-comments"]}>
                   <h3>Коментарі</h3>
                   {comments.map((publishedComment) => (
-                    <article className="published-comment" key={publishedComment.id}>
+                    <article className={styles["published-comment"]} key={publishedComment.id}>
                       <button
                         type="button"
-                        className="delete-comment-button"
+                        className={styles["delete-comment-button"]}
                         aria-label="Видалити коментар"
                         title="Видалити коментар"
                         onClick={() => setPendingDeleteCommentId(publishedComment.id)}
@@ -536,7 +547,7 @@ function ProfilePage() {
                         &times;
                       </button>
                       {pendingDeleteCommentId === publishedComment.id && (
-                        <div className="comment-delete-confirm">
+                        <div className={styles["comment-delete-confirm"]}>
                           <span>Видалити?</span>
                           <button type="button" onClick={() => deleteComment(publishedComment.id)}>
                             Так
@@ -546,14 +557,14 @@ function ProfilePage() {
                           </button>
                         </div>
                       )}
-                      <div className="published-comment-meta">
-                        <img src={avatarUrl} alt="" className="comment-avatar" />
+                      <div className={styles["published-comment-meta"]}>
+                        <img src={avatarUrl} alt="" className={styles["comment-avatar"]} />
                         <strong>{publishedComment.author}</strong>
                         <span>{publishedComment.date}</span>
                         {publishedComment.isOfftopic && <em>Оффтоп</em>}
                       </div>
                       <div
-                        className="published-comment-body"
+                        className={styles["published-comment-body"]}
                         dangerouslySetInnerHTML={{
                           __html: sanitizeCommentHtml(publishedComment.html),
                         }}
@@ -567,7 +578,7 @@ function ProfilePage() {
         )}
       </main>
 
-      <footer className="footer">
+      <footer className={styles["footer"]}>
         <p>&copy; 2026 Descore. Всі права захищені.</p>
       </footer>
     </div>
@@ -583,7 +594,7 @@ function RatingEditor({ form, onOverallChange, onScoreChange, onReviewChange, on
   ];
 
   return (
-    <div className="rating-editor">
+    <div className={styles["rating-editor"]}>
       <label htmlFor="profileOverallScore">Загальна оцінка</label>
       <input
         id="profileOverallScore"
@@ -594,7 +605,7 @@ function RatingEditor({ form, onOverallChange, onScoreChange, onReviewChange, on
         onChange={(event) => onOverallChange(event.target.value)}
       />
       {fields.map(([name, label, placeholder]) => (
-        <div className="rating-editor-field" key={name}>
+        <div className={styles["rating-editor-field"]} key={name}>
           <label htmlFor={`profile-${name}-score`}>{label}</label>
           <input
             id={`profile-${name}-score`}
@@ -612,11 +623,11 @@ function RatingEditor({ form, onOverallChange, onScoreChange, onReviewChange, on
           />
         </div>
       ))}
-      <div className="rating-editor-actions">
-        <button type="button" className="save-rating-button" onClick={onSave}>
+      <div className={styles["rating-editor-actions"]}>
+        <button type="button" className={styles["save-rating-button"]} onClick={onSave}>
           Зберегти
         </button>
-        <button type="button" className="cancel-rating-button" onClick={onCancel}>
+        <button type="button" className={styles["cancel-rating-button"]} onClick={onCancel}>
           Скасувати
         </button>
       </div>
