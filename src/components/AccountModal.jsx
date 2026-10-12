@@ -1,4 +1,5 @@
 import { useState } from "react";
+import styles from "./AccountModal.module.css";
 
 function AccountModal({ isOpen, onClose, onRegistered }) {
   const [formData, setFormData] = useState({ email: "", username: "", password: "" });
@@ -32,11 +33,11 @@ function AccountModal({ isOpen, onClose, onRegistered }) {
   return (
     <div
       id="accountModal"
-      className="modal"
+      className={styles.modal}
       onClick={(event) => event.target.id === "accountModal" && onClose()}
     >
-      <div className="modal-content">
-        <span className="close" onClick={onClose}>
+      <div className={styles["modal-content"]}>
+        <span className={styles.close} onClick={onClose}>
           &times;
         </span>
         <h2>Увійти в Descore</h2>
@@ -79,7 +80,7 @@ function AccountModal({ isOpen, onClose, onRegistered }) {
             Зареєструватися
           </button>
         </form>
-        <p className="note">
+        <p className={styles.note}>
           Реєструючись, ви погоджуєтесь з <a href="#">Правилами</a> та{" "}
           <a href="#">Політикою конфіденційності</a>.
         </p>

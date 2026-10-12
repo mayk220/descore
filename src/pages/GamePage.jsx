@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Header from "../components/Header";
 import AccountModal from "../components/AccountModal";
-import "../styles/game.css";
+import styles from "../styles/GamePage.module.css";
 
 const initialScores = {
   gameplay: "",
@@ -38,9 +38,9 @@ const criticAspectScores = {
 function getScoreClass(value) {
   const score = Number(value);
   if (!value) return "";
-  if (score >= 9) return "score-blue";
-  if (score >= 5) return "score-green";
-  return "score-red";
+  if (score >= 9) return styles["score-blue"];
+  if (score >= 5) return styles["score-green"];
+  return styles["score-red"];
 }
 
 function getSavedRating() {
@@ -128,7 +128,7 @@ function GamePage() {
   }
 
   return (
-    <div className="game-page">
+    <div className={styles["game-page"]}>
       <Header
         isRegistered={isRegistered}
         onAccountClick={() => setIsAccountOpen(true)}
@@ -141,60 +141,60 @@ function GamePage() {
         onRegistered={() => setIsRegistered(true)}
       />
 
-      <header className="header">
+      <header className={styles["header"]}>
         <h1>Hollow Knight: Silksong</h1>
-        <div className="rate-class">
-          <button className="rate-btn" onClick={() => setIsRatingOpen(true)}>
+        <div className={styles["rate-class"]}>
+          <button className={styles["rate-btn"]} onClick={() => setIsRatingOpen(true)}>
             Оцінити
           </button>
         </div>
-        <p className="platform">PC | Доступна на: Всі платформи</p>
-        <p className="release">Реліз: 4 вересня 2025</p>
+        <p className={styles["platform"]}>PC | Доступна на: Всі платформи</p>
+        <p className={styles["release"]}>Реліз: 4 вересня 2025</p>
       </header>
 
-      <main className="main-content">
-        <section className="top-section">
-          <div className="video-box">
+      <main className={styles["main-content"]}>
+        <section className={styles["top-section"]}>
+          <div className={styles["video-box"]}>
             <iframe
               src="https://www.youtube.com/embed/pFAknD_9U7c"
               title="Silksong - trailer"
               allowFullScreen
             />
           </div>
-          <div className="score-panel">
-            <div className="score metascore">
-              <span className="label">Оцінка критиків</span>
-              <span className="value">90</span>
+          <div className={styles["score-panel"]}>
+            <div className={styles["score"] + " " + styles["metascore"]}>
+              <span className={styles["label"]}>Оцінка критиків</span>
+              <span className={styles["value"]}>90</span>
               <button
                 type="button"
-                className="details-link"
+                className={styles["details-link"]}
                 onClick={() => setIsCriticDetailsOpen(true)}
               >
                 Глянути детально
               </button>
-              <span className="user-count">199 оглядів</span>
+              <span className={styles["user-count"]}>199 оглядів</span>
             </div>
-            <div className="score userscore">
-              <span className="label">Оцінка користувачів</span>
-              <span className="value">8.6</span>
+            <div className={styles["score"] + " " + styles["userscore"]}>
+              <span className={styles["label"]}>Оцінка користувачів</span>
+              <span className={styles["value"]}>8.6</span>
               <button
                 type="button"
-                className="details-link"
+                className={styles["details-link"]}
                 onClick={() => setIsUserDetailsOpen(true)}
               >
                 Глянути детально
               </button>
-              <span className="user-count">6939 оцінок</span>
+              <span className={styles["user-count"]}>6939 оцінок</span>
             </div>
-            <div className="score myscore">
-              <span className="label">Моя оцінка</span>
-              <span className="value">{myRating || "—"}</span>
-              <p className="note"></p>
+            <div className={styles["score"] + " " + styles["myscore"]}>
+              <span className={styles["label"]}>Моя оцінка</span>
+              <span className={styles["value"]}>{myRating || "—"}</span>
+              <p className={styles["note"]}></p>
             </div>
           </div>
         </section>
 
-        <section className="description">
+        <section className={styles["description"]}>
           <h2>Опис гри</h2>
           <p>
             Hollow Knight: Silksong — продовження культової метроїдванії від Team Cherry. Ви граєте
@@ -230,23 +230,25 @@ function GamePage() {
         />
       </main>
 
-      <footer className="footer">
+      <footer className={styles["footer"]}>
         <p>&copy; 2025 Descore. Всі права захищені.</p>
       </footer>
 
       {isRatingOpen && (
         <div
-          className="modal rating-modal"
-          onClick={(event) =>
-            event.target.className.includes("rating-modal") && setIsRatingOpen(false)
-          }
+          className={styles["modal"] + " " + styles["rating-modal"]}
+          onClick={(event) => event.target === event.currentTarget && setIsRatingOpen(false)}
         >
-          <form className="modal-content" onSubmit={submitRating}>
-            <button type="button" className="close" onClick={() => setIsRatingOpen(false)}>
+          <form className={styles["modal-content"]} onSubmit={submitRating}>
+            <button
+              type="button"
+              className={styles["close"]}
+              onClick={() => setIsRatingOpen(false)}
+            >
               &times;
             </button>
             <h2>🎮 Оцінка гри</h2>
-            <div className="overall-rating-field">
+            <div className={styles["overall-rating-field"]}>
               <label htmlFor="overallScore">Загальна оцінка гри (1–10)</label>
               <input
                 id="overallScore"
@@ -263,7 +265,7 @@ function GamePage() {
                 }
                 placeholder="Ваша загальна оцінка"
               />
-              <div className="score-display">
+              <div className={styles["score-display"]}>
                 Оцінка: <span className={getScoreClass(overallScore)}>{overallScore}</span>
               </div>
             </div>
@@ -311,18 +313,20 @@ function GamePage() {
       )}
       {isUserDetailsOpen && (
         <div
-          className="modal details-modal"
-          onClick={(event) =>
-            event.target.className.includes("details-modal") && setIsUserDetailsOpen(false)
-          }
+          className={styles["modal"] + " " + styles["details-modal"]}
+          onClick={(event) => event.target === event.currentTarget && setIsUserDetailsOpen(false)}
         >
-          <div className="modal-content">
-            <button type="button" className="close" onClick={() => setIsUserDetailsOpen(false)}>
+          <div className={styles["modal-content"]}>
+            <button
+              type="button"
+              className={styles["close"]}
+              onClick={() => setIsUserDetailsOpen(false)}
+            >
               &times;
             </button>
             <h2>Оцінки аспектів гри</h2>
             {Object.entries(userAspectScores).map(([aspect, score]) => (
-              <div className="rating-detail" key={aspect}>
+              <div className={styles["rating-detail"]} key={aspect}>
                 <span>{aspect}</span>
                 <strong>{score}/10</strong>
               </div>
@@ -332,18 +336,20 @@ function GamePage() {
       )}
       {isCriticDetailsOpen && (
         <div
-          className="modal details-modal"
-          onClick={(event) =>
-            event.target.className.includes("details-modal") && setIsCriticDetailsOpen(false)
-          }
+          className={styles["modal"] + " " + styles["details-modal"]}
+          onClick={(event) => event.target === event.currentTarget && setIsCriticDetailsOpen(false)}
         >
-          <div className="modal-content">
-            <button type="button" className="close" onClick={() => setIsCriticDetailsOpen(false)}>
+          <div className={styles["modal-content"]}>
+            <button
+              type="button"
+              className={styles["close"]}
+              onClick={() => setIsCriticDetailsOpen(false)}
+            >
               &times;
             </button>
             <h2>Оцінки аспектів від критиків</h2>
             {Object.entries(criticAspectScores).map(([aspect, score]) => (
-              <div className="rating-detail" key={aspect}>
+              <div className={styles["rating-detail"]} key={aspect}>
                 <span>{aspect}</span>
                 <strong>{score}/10</strong>
               </div>
@@ -357,7 +363,7 @@ function GamePage() {
 
 function RatingField({ name, label, placeholder, score, review, onScoreChange, onReviewChange }) {
   return (
-    <div className="rating-field">
+    <div className={styles["rating-field"]}>
       <label htmlFor={`${name}Score`}>{label}</label>
       <input
         id={`${name}Score`}
@@ -368,7 +374,7 @@ function RatingField({ name, label, placeholder, score, review, onScoreChange, o
         onChange={(event) => onScoreChange(name, event.target.value)}
         placeholder="Введіть оцінку"
       />
-      <div className="score-display">
+      <div className={styles["score-display"]}>
         Оцінка: <span className={getScoreClass(score)}>{score}</span>
       </div>
       <label htmlFor={`${name}Review`}>
@@ -381,7 +387,7 @@ function RatingField({ name, label, placeholder, score, review, onScoreChange, o
         onChange={(event) => onReviewChange(name, event.target.value)}
         placeholder={placeholder}
       />
-      <div className="char-count">{review.length}/1000 символів</div>
+      <div className={styles["char-count"]}>{review.length}/1000 символів</div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Header from "../components/Header";
 import AccountModal from "../components/AccountModal";
+import styles from "./MainPage.module.css";
 
 const games = [
   {
@@ -87,34 +88,37 @@ function MainPage() {
         onRegistered={() => setIsRegistered(true)}
       />
 
-      <div className="section">
+      <div className={styles.section}>
         <h2>Новинки</h2>
-        <div className="games-grid">
+        <div className={styles["games-grid"]}>
           {games.map((game) => {
             const scoreClass = game.score >= 90 ? "acclaim" : "favorable";
             const image = <img src={game.image} alt={game.alt} />;
 
             return (
-              <div className="game-card" data-score={game.score} key={game.id}>
-                <div id={game.id} className="game-title">
+              <div className={styles["game-card"]} data-score={game.score} key={game.id}>
+                <div id={game.id} className={styles["game-title"]}>
                   {game.title}
                   {image}
                 </div>
-                <div className="game-genre">Genre: {game.genre}</div>
-                <div className={`score ${scoreClass}`} data-score={game.score}></div>
+                <div className={styles["game-genre"]}>Genre: {game.genre}</div>
+                <div
+                  className={`${styles.score} ${styles[scoreClass]}`}
+                  data-score={game.score}
+                ></div>
               </div>
             );
           })}
         </div>
       </div>
 
-      <div className="section">
+      <div className={styles.section}>
         <h2>Цікавинки</h2>
-        <div className="editorial-grid">
+        <div className={styles["editorial-grid"]}>
           {editorials.map(([image, alt, title]) => (
-            <div className="editorial-card" key={title}>
+            <div className={styles["editorial-card"]} key={title}>
               <img src={image} alt={alt} />
-              <div className="editorial-title">{title}</div>
+              <div className={styles["editorial-title"]}>{title}</div>
             </div>
           ))}
         </div>
