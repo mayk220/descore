@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Previous lab materials
+/descore/
+/lab2_photos/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
