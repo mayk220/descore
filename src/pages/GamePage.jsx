@@ -129,12 +129,7 @@ function GamePage() {
 
   return (
     <div className={styles["game-page"]}>
-      <Header
-        isRegistered={isRegistered}
-        onAccountClick={() => setIsAccountOpen(true)}
-        onProfileClick={() => {}}
-        onLogoClick={() => {}}
-      />
+      <Header isRegistered={isRegistered} onAccountClick={() => setIsAccountOpen(true)} />
       <AccountModal
         isOpen={isAccountOpen}
         onClose={() => setIsAccountOpen(false)}
