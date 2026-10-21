@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-
-# descore
-
-=======
-
 # Descore
 
 React-застосунок для перегляду оцінок і матеріалів про відеоігри.
@@ -51,5 +45,3 @@ npm run build        # production-збірка
 ```
 
 Перед кожним commit Husky запускає lint-staged: ESLint і Prettier перевіряють змінені файли.
-
-> > > > > > > c6dd1dd (додав файли у lab3)
