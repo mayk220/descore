@@ -18,6 +18,20 @@ const gameCoverImages = {
   "Hollow Knight: Silksong":
     "https://cdn.cloudflare.steamstatic.com/steam/apps/1030300/library_600x900_2x.jpg",
 };
+const franchises = [
+  {
+    name: "Resident Evil",
+    image: gameCoverImages["Resident Evil 3"],
+  },
+  {
+    name: "The Witcher",
+    image: gameCoverImages["The Witcher 3: Wild Hunt - Blood and Wine"],
+  },
+  {
+    name: "Hollow Knight",
+    image: gameCoverImages["Hollow Knight: Silksong"],
+  },
+];
 const defaultHistoryGames = [
   {
     title: "Resident Evil 3",
@@ -144,6 +158,7 @@ function ProfilePage() {
   );
   const [expandedGame, setExpandedGame] = useState(null);
   const [pendingDeleteCommentId, setPendingDeleteCommentId] = useState(null);
+  const [pendingDeleteRatingTitle, setPendingDeleteRatingTitle] = useState(null);
   const [editingTitle, setEditingTitle] = useState(null);
   const [editingForm, setEditingForm] = useState(null);
   const [favoriteGames, setFavoriteGames] = useState([]);
@@ -248,6 +263,7 @@ function ProfilePage() {
     setHistoryGames(getHistoryGames());
     setEditingTitle(null);
     setEditingForm(null);
+    setPendingDeleteRatingTitle(null);
   }
 
   function deleteRating(title) {
@@ -404,9 +420,21 @@ function ProfilePage() {
                     <button type="button" onClick={() => editRating(game)}>
                       Редагувати оцінку
                     </button>
-                    <button type="button" onClick={() => deleteRating(game.title)}>
-                      Видалити оцінку
-                    </button>
+                    {pendingDeleteRatingTitle === game.title ? (
+                      <div className={styles["rating-delete-confirm"]}>
+                        <span>Видалити?</span>
+                        <button type="button" onClick={() => deleteRating(game.title)}>
+                          Так
+                        </button>
+                        <button type="button" onClick={() => setPendingDeleteRatingTitle(null)}>
+                          Скасувати
+                        </button>
+                      </div>
+                    ) : (
+                      <button type="button" onClick={() => setPendingDeleteRatingTitle(game.title)}>
+                        Видалити оцінку
+                      </button>
+                    )}
                   </div>
                 </article>
               ))}
@@ -475,9 +503,12 @@ function ProfilePage() {
             <section className={styles["franchises"]}>
               <h2>Франшизи</h2>
               <div className={styles["franchise-grid"]}>
-                <div className={styles["franchise-card"]}>[Картинка франшизи]</div>
-                <div className={styles["franchise-card"]}>[Картинка франшизи]</div>
-                <div className={styles["franchise-card"]}>[Картинка франшизи]</div>
+                {franchises.map((franchise) => (
+                  <div className={styles["franchise-card"]} key={franchise.name}>
+                    <img src={franchise.image} alt={franchise.name} />
+                    <span>{franchise.name}</span>
+                  </div>
+                ))}
               </div>
             </section>
             <section className={styles["comment-box"]}>

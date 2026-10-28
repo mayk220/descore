@@ -129,12 +129,7 @@ function GamePage() {
 
   return (
     <div className={styles["game-page"]}>
-      <Header
-        isRegistered={isRegistered}
-        onAccountClick={() => setIsAccountOpen(true)}
-        onProfileClick={() => {}}
-        onLogoClick={() => {}}
-      />
+      <Header isRegistered={isRegistered} onAccountClick={() => setIsAccountOpen(true)} />
       <AccountModal
         isOpen={isAccountOpen}
         onClose={() => setIsAccountOpen(false)}
@@ -305,7 +300,7 @@ function GamePage() {
               onScoreChange={updateScore}
               onReviewChange={updateReview}
             />
-            <button id="submitRating" type="submit">
+            <button id="submitRating" className={styles["submit-rating-button"]} type="submit">
               Надіслати
             </button>
           </form>
@@ -317,13 +312,6 @@ function GamePage() {
           onClick={(event) => event.target === event.currentTarget && setIsUserDetailsOpen(false)}
         >
           <div className={styles["modal-content"]}>
-            <button
-              type="button"
-              className={styles["close"]}
-              onClick={() => setIsUserDetailsOpen(false)}
-            >
-              &times;
-            </button>
             <h2>Оцінки аспектів гри</h2>
             {Object.entries(userAspectScores).map(([aspect, score]) => (
               <div className={styles["rating-detail"]} key={aspect}>
@@ -340,13 +328,6 @@ function GamePage() {
           onClick={(event) => event.target === event.currentTarget && setIsCriticDetailsOpen(false)}
         >
           <div className={styles["modal-content"]}>
-            <button
-              type="button"
-              className={styles["close"]}
-              onClick={() => setIsCriticDetailsOpen(false)}
-            >
-              &times;
-            </button>
             <h2>Оцінки аспектів від критиків</h2>
             {Object.entries(criticAspectScores).map(([aspect, score]) => (
               <div className={styles["rating-detail"]} key={aspect}>

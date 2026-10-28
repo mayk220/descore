@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import Header from "../components/Header";
 import AccountModal from "../components/AccountModal";
 import styles from "./MainPage.module.css";
@@ -95,8 +96,8 @@ function MainPage() {
             const scoreClass = game.score >= 90 ? "acclaim" : "favorable";
             const image = <img src={game.image} alt={game.alt} />;
 
-            return (
-              <div className={styles["game-card"]} data-score={game.score} key={game.id}>
+            const cardContent = (
+              <>
                 <div id={game.id} className={styles["game-title"]}>
                   {game.title}
                   {image}
@@ -106,6 +107,22 @@ function MainPage() {
                   className={`${styles.score} ${styles[scoreClass]}`}
                   data-score={game.score}
                 ></div>
+              </>
+            );
+
+            return game.link ? (
+              <Link
+                to={game.link}
+                className={styles["game-card"]}
+                data-score={game.score}
+                key={game.id}
+                style={{ textDecoration: "none", color: "inherit" }}
+              >
+                {cardContent}
+              </Link>
+            ) : (
+              <div className={styles["game-card"]} data-score={game.score} key={game.id}>
+                {cardContent}
               </div>
             );
           })}

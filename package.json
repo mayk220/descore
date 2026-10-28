@@ -28,7 +28,8 @@
   },
   "dependencies": {
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.4"
   },
   "devDependencies": {
     "@cypress/react": "^10.0.1",
@@ -44,7 +45,6 @@
     "globals": "^17.13.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
-    "oxlint": "^1.81.0",
     "prettier": "^3.9.9",
     "start-server-and-test": "^3.0.12",
     "vite": "^8.3.0"
