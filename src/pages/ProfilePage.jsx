@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import AccountModal from "../components/AccountModal";
 import heroImage from "../assets/hero.png";
@@ -18,20 +19,6 @@ const gameCoverImages = {
   "Hollow Knight: Silksong":
     "https://cdn.cloudflare.steamstatic.com/steam/apps/1030300/library_600x900_2x.jpg",
 };
-const franchises = [
-  {
-    name: "Resident Evil",
-    image: gameCoverImages["Resident Evil 3"],
-  },
-  {
-    name: "The Witcher",
-    image: gameCoverImages["The Witcher 3: Wild Hunt - Blood and Wine"],
-  },
-  {
-    name: "Hollow Knight",
-    image: gameCoverImages["Hollow Knight: Silksong"],
-  },
-];
 const defaultHistoryGames = [
   {
     title: "Resident Evil 3",
@@ -65,6 +52,20 @@ const defaultHistoryGames = [
 const ratingsStorageKey = "descoreRatings";
 const deletedGamesStorageKey = "descoreDeletedGames";
 const commentsStorageKey = "descoreComments";
+const franchises = [
+  {
+    name: "Hollow Knight",
+    image: "https://cdn.cloudflare.steamstatic.com/steam/apps/367520/library_600x900_2x.jpg",
+  },
+  {
+    name: "Resident Evil",
+    image: "https://cdn.cloudflare.steamstatic.com/steam/apps/2050650/library_600x900_2x.jpg",
+  },
+  {
+    name: "The Witcher",
+    image: "https://cdn.cloudflare.steamstatic.com/steam/apps/292030/library_600x900_2x.jpg",
+  },
+];
 const aspectLabels = {
   Геймплей: ["Gameplay", "gameplay"],
   Сюжет: ["Story", "story"],
@@ -148,17 +149,16 @@ function formatRatedDate(date) {
 }
 
 function ProfilePage() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isRegistered, setIsRegistered] = useState(() => Boolean(localStorage.getItem("userName")));
   const commentEditorRef = useRef(null);
   const [comments, setComments] = useState(getSavedComments);
   const [isOfftopic, setIsOfftopic] = useState(false);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(
-    () => new URLSearchParams(window.location.search).get("view") === "ratings",
-  );
+  const isHistoryOpen = new URLSearchParams(location.search).get("view") === "ratings";
   const [expandedGame, setExpandedGame] = useState(null);
   const [pendingDeleteCommentId, setPendingDeleteCommentId] = useState(null);
-  const [pendingDeleteRatingTitle, setPendingDeleteRatingTitle] = useState(null);
   const [editingTitle, setEditingTitle] = useState(null);
   const [editingForm, setEditingForm] = useState(null);
   const [favoriteGames, setFavoriteGames] = useState([]);
@@ -263,7 +263,6 @@ function ProfilePage() {
     setHistoryGames(getHistoryGames());
     setEditingTitle(null);
     setEditingForm(null);
-    setPendingDeleteRatingTitle(null);
   }
 
   function deleteRating(title) {
@@ -294,7 +293,11 @@ function ProfilePage() {
 
   return (
     <div className={styles["profile-page"]}>
-      <Header isRegistered={isRegistered} onAccountClick={() => setIsAccountOpen(true)} />
+      <Header
+        isRegistered={isRegistered}
+        onAccountClick={() => setIsAccountOpen(true)}
+        onLoggedOut={() => setIsRegistered(false)}
+      />
       <AccountModal
         isOpen={isAccountOpen}
         onClose={() => setIsAccountOpen(false)}
@@ -329,7 +332,7 @@ function ProfilePage() {
               <button
                 type="button"
                 className={styles["back-button"]}
-                onClick={() => setIsHistoryOpen(false)}
+                onClick={() => navigate("/profile")}
               >
                 ← Профіль
               </button>
@@ -420,21 +423,9 @@ function ProfilePage() {
                     <button type="button" onClick={() => editRating(game)}>
                       Редагувати оцінку
                     </button>
-                    {pendingDeleteRatingTitle === game.title ? (
-                      <div className={styles["rating-delete-confirm"]}>
-                        <span>Видалити?</span>
-                        <button type="button" onClick={() => deleteRating(game.title)}>
-                          Так
-                        </button>
-                        <button type="button" onClick={() => setPendingDeleteRatingTitle(null)}>
-                          Скасувати
-                        </button>
-                      </div>
-                    ) : (
-                      <button type="button" onClick={() => setPendingDeleteRatingTitle(game.title)}>
-                        Видалити оцінку
-                      </button>
-                    )}
+                    <button type="button" onClick={() => deleteRating(game.title)}>
+                      Видалити оцінку
+                    </button>
                   </div>
                 </article>
               ))}
@@ -458,7 +449,7 @@ function ProfilePage() {
               <button
                 type="button"
                 className={styles["history-button"]}
-                onClick={() => setIsHistoryOpen(true)}
+                onClick={() => navigate("/profile?view=ratings")}
               >
                 Історія ігор
               </button>
@@ -504,10 +495,10 @@ function ProfilePage() {
               <h2>Франшизи</h2>
               <div className={styles["franchise-grid"]}>
                 {franchises.map((franchise) => (
-                  <div className={styles["franchise-card"]} key={franchise.name}>
+                  <article className={styles["franchise-card"]} key={franchise.name}>
                     <img src={franchise.image} alt={franchise.name} />
                     <span>{franchise.name}</span>
-                  </div>
+                  </article>
                 ))}
               </div>
             </section>
