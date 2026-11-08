@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useAuth } from "../hooks/useAuth";
 import styles from "./AccountModal.module.css";
 
 function AccountModal({ isOpen, onClose, onRegistered }) {
   const [formData, setFormData] = useState({ email: "", username: "", password: "" });
+  const { register, isLoading, error } = useAuth();
 
   if (!isOpen) return null;
 
@@ -11,7 +13,7 @@ function AccountModal({ isOpen, onClose, onRegistered }) {
     setFormData((current) => ({ ...current, [name]: value }));
   }
 
-  function handleRegister(event) {
+  async function handleRegister(event) {
     event.preventDefault();
 
     const email = formData.email.trim();
@@ -23,11 +25,13 @@ function AccountModal({ isOpen, onClose, onRegistered }) {
       return;
     }
 
-    localStorage.setItem("userEmail", email);
-    localStorage.setItem("userName", username);
-    alert(`Акаунт створено!\nEmail: ${email}\nUsername: ${username}`);
-    onRegistered?.();
-    onClose();
+    try {
+      await register({ email, username, password });
+      onRegistered?.();
+      onClose();
+    } catch {
+      return;
+    }
   }
 
   return (
@@ -76,10 +80,11 @@ function AccountModal({ isOpen, onClose, onRegistered }) {
             placeholder="Мін. 6 символів, 1 цифра, 1 спецсимвол"
           />
 
-          <button id="registerBtn" type="submit">
-            Зареєструватися
+          <button id="registerBtn" type="submit" disabled={isLoading}>
+            {isLoading ? "Завантаження..." : "Зареєструватися"}
           </button>
         </form>
+        {error && <p role="alert">Не вдалося виконати реєстрацію.</p>}
         <p className={styles.note}>
           Реєструючись, ви погоджуєтесь з <a href="#">Правилами</a> та{" "}
           <a href="#">Політикою конфіденційності</a>.

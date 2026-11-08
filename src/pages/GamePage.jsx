@@ -58,6 +58,7 @@ function getSavedRating() {
 function GamePage() {
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isRegistered, setIsRegistered] = useState(() => Boolean(localStorage.getItem("userName")));
+  const [authNotice, setAuthNotice] = useState(false);
   const [isRatingOpen, setIsRatingOpen] = useState(
     () => new URLSearchParams(window.location.search).get("edit") === "1",
   );
@@ -129,17 +130,41 @@ function GamePage() {
 
   return (
     <div className={styles["game-page"]}>
-      <Header isRegistered={isRegistered} onAccountClick={() => setIsAccountOpen(true)} />
+      <Header
+        isRegistered={isRegistered}
+        onAccountClick={() => setIsAccountOpen(true)}
+        onLoggedOut={() => setIsRegistered(false)}
+        onProfileClick={() => {}}
+        onLogoClick={() => {}}
+      />
       <AccountModal
         isOpen={isAccountOpen}
         onClose={() => setIsAccountOpen(false)}
-        onRegistered={() => setIsRegistered(true)}
+        onRegistered={() => {
+          setIsRegistered(true);
+          setAuthNotice(false);
+        }}
       />
 
       <header className={styles["header"]}>
         <h1>Hollow Knight: Silksong</h1>
         <div className={styles["rate-class"]}>
-          <button className={styles["rate-btn"]} onClick={() => setIsRatingOpen(true)}>
+          {authNotice && (
+            <p className={styles["auth-notice"]} role="alert">
+              Зареєструйтесь спочатку
+            </p>
+          )}
+          <button
+            className={styles["rate-btn"]}
+            onClick={() => {
+              if (!isRegistered) {
+                setAuthNotice(true);
+                return;
+              }
+              setAuthNotice(false);
+              setIsRatingOpen(true);
+            }}
+          >
             Оцінити
           </button>
         </div>
@@ -238,6 +263,7 @@ function GamePage() {
             <button
               type="button"
               className={styles["close"]}
+              aria-label="Закрити форму оцінювання"
               onClick={() => setIsRatingOpen(false)}
             >
               &times;
@@ -300,7 +326,7 @@ function GamePage() {
               onScoreChange={updateScore}
               onReviewChange={updateReview}
             />
-            <button id="submitRating" className={styles["submit-rating-button"]} type="submit">
+            <button className={styles["submit-rating-button"]} type="submit">
               Надіслати
             </button>
           </form>
@@ -312,6 +338,14 @@ function GamePage() {
           onClick={(event) => event.target === event.currentTarget && setIsUserDetailsOpen(false)}
         >
           <div className={styles["modal-content"]}>
+            <button
+              type="button"
+              className={styles["close"]}
+              aria-label="Закрити оцінки користувачів"
+              onClick={() => setIsUserDetailsOpen(false)}
+            >
+              &times;
+            </button>
             <h2>Оцінки аспектів гри</h2>
             {Object.entries(userAspectScores).map(([aspect, score]) => (
               <div className={styles["rating-detail"]} key={aspect}>
@@ -328,6 +362,14 @@ function GamePage() {
           onClick={(event) => event.target === event.currentTarget && setIsCriticDetailsOpen(false)}
         >
           <div className={styles["modal-content"]}>
+            <button
+              type="button"
+              className={styles["close"]}
+              aria-label="Закрити оцінки критиків"
+              onClick={() => setIsCriticDetailsOpen(false)}
+            >
+              &times;
+            </button>
             <h2>Оцінки аспектів від критиків</h2>
             {Object.entries(criticAspectScores).map(([aspect, score]) => (
               <div className={styles["rating-detail"]} key={aspect}>
