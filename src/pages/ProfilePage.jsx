@@ -1,7 +1,9 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import AccountModal from "../components/AccountModal";
 import heroImage from "../assets/hero.png";
+import { useApi } from "../hooks/useApi";
 import styles from "../styles/ProfilePage.module.css";
 
 const avatarUrl =
@@ -18,20 +20,12 @@ const gameCoverImages = {
   "Hollow Knight: Silksong":
     "https://cdn.cloudflare.steamstatic.com/steam/apps/1030300/library_600x900_2x.jpg",
 };
-const franchises = [
-  {
-    name: "Resident Evil",
-    image: gameCoverImages["Resident Evil 3"],
-  },
-  {
-    name: "The Witcher",
-    image: gameCoverImages["The Witcher 3: Wild Hunt - Blood and Wine"],
-  },
-  {
-    name: "Hollow Knight",
+const backendGames = {
+  3498: {
+    title: "Hollow Knight: Silksong",
     image: gameCoverImages["Hollow Knight: Silksong"],
   },
-];
+};
 const defaultHistoryGames = [
   {
     title: "Resident Evil 3",
@@ -63,8 +57,23 @@ const defaultHistoryGames = [
   },
 ];
 const ratingsStorageKey = "descoreRatings";
+const favoritesStorageKey = "descoreFavorites";
 const deletedGamesStorageKey = "descoreDeletedGames";
 const commentsStorageKey = "descoreComments";
+const franchises = [
+  {
+    name: "Hollow Knight",
+    image: "https://cdn.cloudflare.steamstatic.com/steam/apps/367520/library_600x900_2x.jpg",
+  },
+  {
+    name: "Resident Evil",
+    image: "https://cdn.cloudflare.steamstatic.com/steam/apps/2050650/library_600x900_2x.jpg",
+  },
+  {
+    name: "The Witcher",
+    image: "https://cdn.cloudflare.steamstatic.com/steam/apps/292030/library_600x900_2x.jpg",
+  },
+];
 const aspectLabels = {
   Геймплей: ["Gameplay", "gameplay"],
   Сюжет: ["Story", "story"],
@@ -148,24 +157,106 @@ function formatRatedDate(date) {
 }
 
 function ProfilePage() {
+  const { request } = useApi();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [isAccountOpen, setIsAccountOpen] = useState(false);
-  const [isRegistered, setIsRegistered] = useState(() => Boolean(localStorage.getItem("userName")));
+  const [isRegistered, setIsRegistered] = useState(
+    () => Boolean(localStorage.getItem("userName") && localStorage.getItem("descoreToken")),
+  );
+  const [accountMode, setAccountMode] = useState("register");
   const commentEditorRef = useRef(null);
   const [comments, setComments] = useState(getSavedComments);
   const [isOfftopic, setIsOfftopic] = useState(false);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(
-    () => new URLSearchParams(window.location.search).get("view") === "ratings",
-  );
+  const isHistoryOpen = new URLSearchParams(location.search).get("view") === "ratings";
   const [expandedGame, setExpandedGame] = useState(null);
   const [pendingDeleteCommentId, setPendingDeleteCommentId] = useState(null);
-  const [pendingDeleteRatingTitle, setPendingDeleteRatingTitle] = useState(null);
   const [editingTitle, setEditingTitle] = useState(null);
   const [editingForm, setEditingForm] = useState(null);
-  const [favoriteGames, setFavoriteGames] = useState([]);
+  const [ratingError, setRatingError] = useState("");
+  const [isProfileEditing, setIsProfileEditing] = useState(false);
+  const [profileForm, setProfileForm] = useState(() => {
+    try {
+      const savedUser = JSON.parse(localStorage.getItem("descoreUser") || "null");
+      return {
+        username: savedUser?.username || localStorage.getItem("userName") || "",
+        email: savedUser?.email || localStorage.getItem("userEmail") || "",
+        avatar: savedUser?.avatar || "",
+      };
+    } catch {
+      return {
+        username: localStorage.getItem("userName") || "",
+        email: localStorage.getItem("userEmail") || "",
+        avatar: "",
+      };
+    }
+  });
+  const [profileError, setProfileError] = useState("");
+  const [favoriteGames, setFavoriteGames] = useState(() => {
+    try {
+      const savedFavorites = JSON.parse(localStorage.getItem(favoritesStorageKey) || "[]");
+      return Array.isArray(savedFavorites) ? savedFavorites : [];
+    } catch {
+      return [];
+    }
+  });
   const [historyGames, setHistoryGames] = useState(getHistoryGames);
-  const username = localStorage.getItem("userName") || "Username";
+  const username = profileForm.username || "Username";
+  const profileAvatar = profileForm.avatar || avatarUrl;
   const ratedGamesCount = historyGames.filter(hasRating).length;
   const reviewedGamesCount = historyGames.filter(hasReview).length;
+
+  useEffect(() => {
+    localStorage.setItem(favoritesStorageKey, JSON.stringify(favoriteGames));
+  }, [favoriteGames]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("descoreToken");
+    if (!token) return;
+
+    request("/ratings/me", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(({ ratings }) => {
+        const backendRatings = ratings
+          .map((item) => {
+            const game = backendGames[item.gameId];
+            if (!game) return null;
+
+            const aspects = item.aspects || {};
+            return {
+              ...game,
+              gameId: item.gameId,
+              rating: item.rating,
+              scores: aspects,
+              reviews: item.reviews || {},
+              details: {
+                Геймплей: aspects.gameplay ?? item.rating,
+                Сюжет: aspects.story ?? item.rating,
+                "Графіка/Дизайн": aspects.design ?? item.rating,
+                Музика: aspects.music ?? item.rating,
+              },
+            };
+          })
+          .filter(Boolean);
+
+        setHistoryGames((current) => {
+          const games = new Map(current.map((game) => [game.title, game]));
+            backendRatings.forEach((game) => {
+              const localGame = games.get(game.title);
+              const reviews = Object.fromEntries(
+                ["gameplay", "story", "design", "music"].map((aspect) => [
+                  aspect,
+                  game.reviews?.[aspect] || localGame?.reviews?.[aspect] || "",
+                ]),
+              );
+              games.set(game.title, { ...localGame, ...game, reviews });
+            });
+          return [...games.values()];
+        });
+      })
+      .catch((error) => console.error("Не вдалося завантажити оцінки профілю", error));
+  }, [request]);
 
   function submitComment() {
     const editor = commentEditorRef.current;
@@ -201,6 +292,7 @@ function ProfilePage() {
   }
 
   function editRating(game) {
+    setRatingError("");
     setEditingTitle(game.title);
     setEditingForm({
       overall: game.rating || "",
@@ -228,21 +320,58 @@ function ProfilePage() {
     }));
   }
 
-  function saveEditedRating(game) {
+  async function saveEditedRating(game) {
     const scoredValues = Object.values(editingForm.scores).filter(Boolean);
     const averageScore =
       scoredValues.reduce((total, score) => total + Number(score), 0) / scoredValues.length || 0;
+    const rating = Number(editingForm.overall || Math.round(averageScore));
+    const aspects = Object.fromEntries(
+      Object.entries(editingForm.scores).map(([name, score]) => [name, Number(score)]),
+    );
+    if (
+      !Number.isInteger(rating) ||
+      rating < 1 ||
+      rating > 10 ||
+      Object.values(aspects).some((score) => !Number.isInteger(score) || score < 1 || score > 10)
+    ) {
+      setRatingError("Заповніть загальну оцінку та всі оцінки аспектів від 1 до 10");
+      return;
+    }
+
+    const gameId =
+      game.gameId ||
+      Object.entries(backendGames).find(([, backendGame]) => backendGame.title === game.title)?.[0];
+
+    if (gameId) {
+      try {
+        await request("/ratings", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${localStorage.getItem("descoreToken")}` },
+          body: JSON.stringify({
+            gameId: Number(gameId),
+            rating,
+            aspects,
+            reviews: editingForm.reviews,
+          }),
+        });
+      } catch (error) {
+        setRatingError(error.message || "Не вдалося оновити оцінку гри");
+        return;
+      }
+    }
+
     const updatedGame = {
       ...game,
+      gameId: gameId ? Number(gameId) : game.gameId,
       date: new Date().toLocaleDateString("uk-UA"),
-      rating: Number(editingForm.overall || averageScore.toFixed(1)),
+      rating,
       details: {
         Геймплей: editingForm.scores.gameplay || "—",
         Сюжет: editingForm.scores.story || "—",
         "Графіка/Дизайн": editingForm.scores.design || "—",
         Музика: editingForm.scores.music || "—",
       },
-      scores: editingForm.scores,
+      scores: aspects,
       reviews: Object.fromEntries(
         Object.entries(editingForm.reviews).map(([name, review]) => [name, review.trim()]),
       ),
@@ -263,10 +392,33 @@ function ProfilePage() {
     setHistoryGames(getHistoryGames());
     setEditingTitle(null);
     setEditingForm(null);
-    setPendingDeleteRatingTitle(null);
+    setRatingError("");
   }
 
-  function deleteRating(title) {
+  async function deleteRating(game) {
+    setRatingError("");
+    const mappedGameId = Object.entries(backendGames).find(
+      ([, backendGame]) => backendGame.title === game.title,
+    )?.[0];
+    const gameId = Number(game.gameId || mappedGameId);
+    if (gameId && import.meta.env.VITE_API_URL) {
+      const token = localStorage.getItem("descoreToken");
+      if (!token) {
+        setRatingError("Увійдіть в акаунт, щоб видалити оцінку з бази");
+        return;
+      }
+
+      try {
+        await request(`/ratings/${gameId}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } catch (error) {
+        setRatingError(error.message || "Не вдалося видалити оцінку");
+        return;
+      }
+    }
+
     let savedRatings;
     try {
       const parsedRatings = JSON.parse(localStorage.getItem(ratingsStorageKey) || "[]");
@@ -274,7 +426,7 @@ function ProfilePage() {
     } catch {
       savedRatings = [];
     }
-    const updatedRatings = savedRatings.filter((game) => game.title !== title);
+    const updatedRatings = savedRatings.filter((savedGame) => savedGame.title !== game.title);
     let deletedGames;
     try {
       const parsedDeletedGames = JSON.parse(localStorage.getItem(deletedGamesStorageKey) || "[]");
@@ -285,18 +437,75 @@ function ProfilePage() {
     localStorage.setItem(ratingsStorageKey, JSON.stringify(updatedRatings));
     localStorage.setItem(
       deletedGamesStorageKey,
-      JSON.stringify([...new Set([...deletedGames, title])]),
+      JSON.stringify([...new Set([...deletedGames, game.title])]),
     );
     setHistoryGames(getHistoryGames());
     setEditingTitle(null);
     setEditingForm(null);
+    setRatingError("");
+  }
+
+  function chooseProfilePhoto(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setProfileError("Оберіть файл зображення");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setProfileError("Фото завелике. Максимальний розмір — 2 МБ");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setProfileForm((current) => ({ ...current, avatar: String(reader.result) }));
+      setProfileError("");
+    };
+    reader.onerror = () => setProfileError("Не вдалося прочитати фото");
+    reader.readAsDataURL(file);
+  }
+
+  async function saveProfile() {
+    setProfileError("");
+    try {
+      const updatedUser = await request("/auth/me", {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${localStorage.getItem("descoreToken")}` },
+        body: JSON.stringify(profileForm),
+      });
+      localStorage.setItem("descoreUser", JSON.stringify(updatedUser));
+      localStorage.setItem("userName", updatedUser.username);
+      localStorage.setItem("userEmail", updatedUser.email);
+      localStorage.setItem("descoreToken", updatedUser.token);
+      setProfileForm({
+        username: updatedUser.username,
+        email: updatedUser.email,
+        avatar: updatedUser.avatar || "",
+      });
+      setIsProfileEditing(false);
+    } catch (error) {
+      setProfileError(error.message || "Не вдалося зберегти профіль");
+    }
   }
 
   return (
     <div className={styles["profile-page"]}>
-      <Header isRegistered={isRegistered} onAccountClick={() => setIsAccountOpen(true)} />
+      <Header
+        isRegistered={isRegistered}
+        onRegisterClick={() => {
+          setAccountMode("register");
+          setIsAccountOpen(true);
+        }}
+        onLoggedOut={() => {
+          setIsRegistered(false);
+          navigate("/", { replace: true });
+        }}
+      />
       <AccountModal
+        key={accountMode}
         isOpen={isAccountOpen}
+        mode={accountMode}
         onClose={() => setIsAccountOpen(false)}
         onRegistered={() => setIsRegistered(true)}
       />
@@ -308,7 +517,7 @@ function ProfilePage() {
         >
           <div className={styles["profile-card-content"]}>
             <div className={styles["avatar"]}>
-              <img src={avatarUrl} alt="Аватар" className={styles["avatar-img"]} />
+              <img src={profileAvatar} alt="Аватар" className={styles["avatar-img"]} />
               <i
                 className={
                   styles["fa-solid"] + " " + styles["fa-circle-user"] + " " + styles["fa-5x"]
@@ -317,10 +526,52 @@ function ProfilePage() {
             </div>
             <div className={styles["profile-info"]}>
               <h2>{username}</h2>
+              <p>{profileForm.email}</p>
               <p className={styles["profile-activity"]}>Активність: 3 тижні і 6 днів</p>
               <p className={styles["joined"]}>Приєднався: вересень 2026</p>
+              <button
+                type="button"
+                className={styles["edit-profile-button"]}
+                onClick={() => {
+                  setProfileError("");
+                  setIsProfileEditing((current) => !current);
+                }}
+              >
+                {isProfileEditing ? "Скасувати" : "Редагувати профіль"}
+              </button>
             </div>
           </div>
+          {isProfileEditing && (
+            <div className={styles["profile-edit-form"]}>
+              <label>
+                Нік
+                <input
+                  value={profileForm.username}
+                  onChange={(event) =>
+                    setProfileForm((current) => ({ ...current, username: event.target.value }))
+                  }
+                />
+              </label>
+              <label>
+                Gmail
+                <input
+                  type="email"
+                  value={profileForm.email}
+                  onChange={(event) =>
+                    setProfileForm((current) => ({ ...current, email: event.target.value }))
+                  }
+                />
+              </label>
+              <label>
+                Фото профілю
+                <input type="file" accept="image/*" onChange={chooseProfilePhoto} />
+              </label>
+              {profileError && <p className={styles["profile-edit-error"]}>{profileError}</p>}
+              <button type="button" onClick={saveProfile}>
+                Зберегти зміни
+              </button>
+            </div>
+          )}
         </section>
 
         {isHistoryOpen ? (
@@ -329,13 +580,16 @@ function ProfilePage() {
               <button
                 type="button"
                 className={styles["back-button"]}
-                onClick={() => setIsHistoryOpen(false)}
+                onClick={() => navigate("/profile")}
               >
                 ← Профіль
               </button>
               <h1>Мої оцінки та відгуки</h1>
             </div>
             <p className={styles["history-count"]}>{historyGames.length} оцінки в іграх</p>
+            {ratingError && !editingTitle && (
+              <p className={styles["rating-editor-error"]}>{ratingError}</p>
+            )}
             <div className={styles["history-grid"]}>
               {historyGames.map((game) => (
                 <article className={styles["history-card"]} key={game.title}>
@@ -382,7 +636,9 @@ function ProfilePage() {
                           onCancel={() => {
                             setEditingTitle(null);
                             setEditingForm(null);
+                            setRatingError("");
                           }}
+                          error={ratingError}
                         />
                       ) : (
                         <>
@@ -420,21 +676,9 @@ function ProfilePage() {
                     <button type="button" onClick={() => editRating(game)}>
                       Редагувати оцінку
                     </button>
-                    {pendingDeleteRatingTitle === game.title ? (
-                      <div className={styles["rating-delete-confirm"]}>
-                        <span>Видалити?</span>
-                        <button type="button" onClick={() => deleteRating(game.title)}>
-                          Так
-                        </button>
-                        <button type="button" onClick={() => setPendingDeleteRatingTitle(null)}>
-                          Скасувати
-                        </button>
-                      </div>
-                    ) : (
-                      <button type="button" onClick={() => setPendingDeleteRatingTitle(game.title)}>
-                        Видалити оцінку
-                      </button>
-                    )}
+                    <button type="button" onClick={() => deleteRating(game)}>
+                      Видалити оцінку
+                    </button>
                   </div>
                 </article>
               ))}
@@ -458,7 +702,7 @@ function ProfilePage() {
               <button
                 type="button"
                 className={styles["history-button"]}
-                onClick={() => setIsHistoryOpen(true)}
+                onClick={() => navigate("/profile?view=ratings")}
               >
                 Історія ігор
               </button>
@@ -482,32 +726,14 @@ function ProfilePage() {
               )}
             </section>
 
-            <section className={styles["achievements"]}>
-              <h2>Досягнення</h2>
-              <div className={styles["achievements-block"]}>
-                <h3>Загальні</h3>
-                <div className={styles["achievement-card"]}>
-                  <img
-                    src="https://images.stopgame.ru/uploads/users/2021/161162/00799.tcDEah-.jpg"
-                    alt="Досягнення"
-                  />
-                  <p>50 оцінених ігор</p>
-                </div>
-              </div>
-              <div className={styles["achievements-block"]}>
-                <h3>Жанрові</h3>
-                <p>Немає досягнень</p>
-              </div>
-            </section>
-
             <section className={styles["franchises"]}>
               <h2>Франшизи</h2>
               <div className={styles["franchise-grid"]}>
                 {franchises.map((franchise) => (
-                  <div className={styles["franchise-card"]} key={franchise.name}>
+                  <article className={styles["franchise-card"]} key={franchise.name}>
                     <img src={franchise.image} alt={franchise.name} />
                     <span>{franchise.name}</span>
-                  </div>
+                  </article>
                 ))}
               </div>
             </section>
@@ -589,7 +815,7 @@ function ProfilePage() {
                         </div>
                       )}
                       <div className={styles["published-comment-meta"]}>
-                        <img src={avatarUrl} alt="" className={styles["comment-avatar"]} />
+                        <img src={profileAvatar} alt="" className={styles["comment-avatar"]} />
                         <strong>{publishedComment.author}</strong>
                         <span>{publishedComment.date}</span>
                         {publishedComment.isOfftopic && <em>Оффтоп</em>}
@@ -616,7 +842,15 @@ function ProfilePage() {
   );
 }
 
-function RatingEditor({ form, onOverallChange, onScoreChange, onReviewChange, onSave, onCancel }) {
+function RatingEditor({
+  form,
+  onOverallChange,
+  onScoreChange,
+  onReviewChange,
+  onSave,
+  onCancel,
+  error,
+}) {
   const fields = [
     ["gameplay", "Gameplay", "Опишіть геймплей"],
     ["story", "Story", "Опишіть сюжет"],
@@ -635,6 +869,7 @@ function RatingEditor({ form, onOverallChange, onScoreChange, onReviewChange, on
         value={form.overall}
         onChange={(event) => onOverallChange(event.target.value)}
       />
+      {error && <p className={styles["rating-editor-error"]}>{error}</p>}
       {fields.map(([name, label, placeholder]) => (
         <div className={styles["rating-editor-field"]} key={name}>
           <label htmlFor={`profile-${name}-score`}>{label}</label>

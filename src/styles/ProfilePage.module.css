@@ -16,7 +16,6 @@ body {
 .profile-stats,
 .activity,
 .favorites,
-.achievements,
 .franchises,
 .comment-box {
   margin-bottom: 25px;
@@ -217,6 +216,11 @@ body {
   gap: 8px;
   margin-top: 12px;
 }
+.rating-editor-error {
+  margin: 8px 0;
+  color: #ff8a80;
+  font-size: 0.85rem;
+}
 .rating-editor-actions button {
   border: 0;
   border-radius: 4px;
@@ -291,7 +295,8 @@ body {
   margin-left: auto;
   min-height: 230px;
   display: flex;
-  align-items: flex-end;
+  flex-direction: column;
+  align-items: stretch;
   overflow: hidden;
   background-position: center;
   background-size: cover;
@@ -306,9 +311,12 @@ body {
   position: relative;
   z-index: 1;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 20px;
   width: 100%;
+  padding: 30px 20px 22px;
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 .avatar {
   position: relative;
@@ -328,9 +336,108 @@ body {
   margin: 0;
   color: #fff;
 }
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
 .profile-info p {
   margin: 5px 0;
   color: #ccc;
+}
+.edit-profile-button {
+  margin: 12px 0 0;
+  padding: 8px 12px;
+  border: 1px solid #00bcd4;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.85rem;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.edit-profile-button:hover {
+  background: #00bcd4;
+  color: #06232a;
+}
+.profile-edit-form {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: min(430px, 100%);
+  margin: 18px 0 0 116px;
+  padding: 18px;
+  border: 1px solid rgba(0, 188, 212, 0.45);
+  border-radius: 10px;
+  background: rgba(7, 18, 27, 0.9);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+}
+.profile-edit-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #b9dbe1;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.profile-edit-form input {
+  min-width: 0;
+  padding: 10px 11px;
+  border: 1px solid #49636d;
+  border-radius: 6px;
+  background: #1d2b34;
+  color: #fff;
+  font: inherit;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.profile-edit-form input[type="file"] {
+  padding: 6px;
+  cursor: pointer;
+}
+.profile-edit-form input[type="file"]::file-selector-button {
+  margin-right: 10px;
+  padding: 7px 11px;
+  border: 0;
+  border-radius: 5px;
+  background: #53d6cf;
+  color: #082126;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.profile-edit-form input[type="file"]::file-selector-button:hover {
+  background: #00bcd4;
+  transform: translateY(-1px);
+}
+.profile-edit-form input:focus {
+  outline: none;
+  border-color: #00bcd4;
+  box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.16);
+}
+.profile-edit-form button {
+  align-self: flex-start;
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 6px;
+  background: #00bcd4;
+  color: #06232a;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.profile-edit-form button:hover {
+  background: #53d6cf;
+  transform: translateY(-1px);
+}
+.profile-edit-error {
+  margin: 0;
+  color: #ff8a80;
 }
 .favorite-games {
   display: grid;
@@ -360,7 +467,6 @@ body {
 .profile-stats h2,
 .activity h2,
 .favorites h2,
-.achievements h2,
 .franchises h2,
 .comment-box h2 {
   margin: 0 0 15px;
@@ -371,18 +477,6 @@ body {
   font-weight: bold;
 }
 
-.achievements-block {
-  margin-top: 15px;
-}
-.achievement-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.achievement-card img {
-  width: 60px;
-  border-radius: 8px;
-}
 .franchise-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -587,6 +681,15 @@ body {
   .profile-card-content {
     align-items: flex-start;
     flex-direction: column;
+    padding: 25px 15px 15px;
+  }
+  .edit-profile-button {
+    align-self: flex-start;
+    margin-top: 10px;
+  }
+  .profile-edit-form {
+    width: calc(100% - 30px);
+    margin: 18px 15px 0;
   }
   .history-heading {
     align-items: flex-start;

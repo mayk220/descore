@@ -47,6 +47,20 @@
   background-color: #2e7d32;
 }
 
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.tabs button {
+  background: #2c2c2c !important;
+}
+
+.tabs button.active-tab {
+  background: #388e3c !important;
+}
+
 .close {
   position: absolute;
   top: 10px;
