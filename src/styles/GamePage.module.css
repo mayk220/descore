@@ -306,6 +306,28 @@
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
 }
 
+.details-modal .close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  border: 0;
+  padding: 2px 6px;
+  background: transparent;
+  color: #c4d0d7;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.details-modal .close:hover {
+  color: #53d6cf;
+}
+
+.details-modal .modal-content h2 {
+  padding-right: 42px;
+}
+
 .details-modal .rating-detail {
   display: flex;
   justify-content: space-between;

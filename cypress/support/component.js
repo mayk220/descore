@@ -1,3 +1,4 @@
+import "@cypress/code-coverage/support";
 import { mount } from "cypress/react";
 
-globalThis.Cypress.Commands.add("mount", mount);
+Cypress.Commands.add("mount", mount);

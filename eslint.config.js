@@ -5,7 +5,14 @@ import globals from "globals";
 
 export default [
   {
-    ignores: ["dist", "node_modules", "cypress/screenshots", "cypress/videos"],
+    ignores: [
+      "dist",
+      "node_modules",
+      "coverage",
+      ".nyc_output",
+      "cypress/screenshots",
+      "cypress/videos",
+    ],
   },
   js.configs.recommended,
   {
@@ -31,11 +38,13 @@ export default [
     },
   },
   {
-    files: ["cypress/**/*.js", "src/**/*.cy.jsx"],
+    files: ["cypress/**/*.js", "cypress/**/*.jsx"],
     languageOptions: {
       globals: {
         ...globals.mocha,
+        Cypress: "readonly",
         cy: "readonly",
+        expect: "readonly",
       },
     },
   },

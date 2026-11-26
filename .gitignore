@@ -10,11 +10,24 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+coverage
+.nyc_output
+cypress/screenshots
+cypress/videos
 *.local
 
 # Previous lab materials
 /descore/
 /lab2_photos/
+/backend/data/users.json
+/backend/data/ratings.json
+/backend/.env
+/backend/.env.*
+!/backend/.env.example
+/.env
+/.env.*
+!/.env.example
+!/.env.e2e
 
 # Editor directories and files
 .vscode/*
