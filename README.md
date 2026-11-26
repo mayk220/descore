@@ -10,7 +10,7 @@ React-застосунок для перегляду оцінок і матер�
 
 - React 19 + React DOM
 - Vite
-- Cypress Component Testing + Istanbul coverage
+- Cypress end-to-end and Component Testing + Istanbul coverage
 - ESLint
 - Prettier
 - Husky + lint-staged для Git hooks
@@ -91,9 +91,13 @@ npm run lint                # ESLint
 npm run format              # форматування Prettier
 npm run format:check        # перевірка форматування
 npm run build               # production-збірка
+npm run test:e2e            # E2E-тести Cypress
+npm run test:e2e:open       # інтерактивний режим E2E-тестів
 npm run test:component      # компонентні тести Cypress і звіт coverage
 npm run test:component:open # інтерактивний режим Cypress
 ```
+
+Для E2E-тестів спочатку запустіть застосунок командою `npm run dev:test` в одному терміналі, а потім виконайте `npm run test:e2e` або `npm run test:e2e:open` в іншому. Тести використовують адресу `http://localhost:4173` і підмінюють відповіді API, тому тестовий акаунт, база даних або запущений бекенд не потрібні. Перевіряються переходи між сторінками, реєстрація та вхід, захист профілю, оцінки й відгуки, улюблені ігри, коментарі та помилки API.
 
 Звіт code coverage генерується в `coverage/index.html`.
 

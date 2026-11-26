@@ -31,6 +31,10 @@ function AccountModal({ isOpen, onClose, onRegistered, mode = "register" }) {
       alert("Заповніть усі поля!");
       return;
     }
+    if (!isLoginMode && password.length < 6) {
+      alert("Пароль має містити щонайменше 6 символів");
+      return;
+    }
 
     try {
       if (isLoginMode) {
@@ -119,9 +123,7 @@ function AccountModal({ isOpen, onClose, onRegistered, mode = "register" }) {
             {isLoading ? "Завантаження..." : isLoginMode ? "Увійти" : "Зареєструватися"}
           </button>
         </form>
-        {error && (
-          <p role="alert">{error.message}</p>
-        )}
+        {error && <p role="alert">{error.message}</p>}
         {!isLoginMode && (
           <p className={styles.note}>
             Реєструючись, ви погоджуєтесь з <a href="#">Правилами</a> та{" "}
