@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./Header.module.css";
 
-function Header({ isRegistered, onAccountClick }) {
+function Header({ isRegistered, onRegisterClick, onLoggedOut }) {
   const searchInputRef = useRef(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -20,8 +20,12 @@ function Header({ isRegistered, onAccountClick }) {
   }
 
   function logout() {
+    localStorage.removeItem("descoreUser");
     localStorage.removeItem("userName");
     localStorage.removeItem("userEmail");
+    localStorage.removeItem("descoreToken");
+    setIsProfileMenuOpen(false);
+    onLoggedOut?.();
   }
 
   return (
@@ -66,9 +70,11 @@ function Header({ isRegistered, onAccountClick }) {
               </div>
             </div>
           ) : (
-            <button type="button" className={styles["register-btn"]} onClick={onAccountClick}>
-              Реєстрація
-            </button>
+            <>
+              <button type="button" className={styles["register-btn"]} onClick={onRegisterClick}>
+                Реєстрація
+              </button>
+            </>
           )}
         </div>
       </div>

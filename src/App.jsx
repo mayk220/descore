@@ -4,7 +4,9 @@ import MainPage from "./pages/MainPage";
 import ProfilePage from "./pages/ProfilePage";
 
 function ProtectedRoute({ children }) {
-  const isRegistered = Boolean(localStorage.getItem("userName"));
+  const isRegistered = Boolean(
+    localStorage.getItem("userName") && localStorage.getItem("descoreToken"),
+  );
 
   return isRegistered ? children : <Navigate to="/main" replace />;
 }

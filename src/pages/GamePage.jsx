@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import AccountModal from "../components/AccountModal";
+import { useApi } from "../hooks/useApi";
 import styles from "../styles/GamePage.module.css";
 
 const initialScores = {
@@ -19,15 +20,10 @@ const initialReviews = {
 
 const ratingsStorageKey = "descoreRatings";
 const deletedGamesStorageKey = "descoreDeletedGames";
+const gameId = 3498;
 const gameTitle = "Hollow Knight: Silksong";
 const gameImage =
   "https://cdn.cloudflare.steamstatic.com/steam/apps/1030300/library_600x900_2x.jpg";
-const userAspectScores = {
-  Геймплей: 8.8,
-  Сюжет: 8.4,
-  "Графіка/Дизайн": 8.7,
-  Музика: 8.5,
-};
 const criticAspectScores = {
   Геймплей: 9.4,
   Сюжет: 9.1,
@@ -43,32 +39,58 @@ function getScoreClass(value) {
   return styles["score-red"];
 }
 
-function getSavedRating() {
-  try {
-    const savedRatings = JSON.parse(localStorage.getItem(ratingsStorageKey) || "[]");
-    const savedRating = Array.isArray(savedRatings)
-      ? savedRatings.find((rating) => rating.title === gameTitle)
-      : null;
-    return savedRating || null;
-  } catch {
-    return null;
-  }
-}
-
 function GamePage() {
+  const { request } = useApi();
   const [isAccountOpen, setIsAccountOpen] = useState(false);
-  const [isRegistered, setIsRegistered] = useState(() => Boolean(localStorage.getItem("userName")));
+  const [accountMode, setAccountMode] = useState("register");
+  const [isRegistered, setIsRegistered] = useState(
+    () => Boolean(localStorage.getItem("userName") && localStorage.getItem("descoreToken")),
+  );
   const [authNotice, setAuthNotice] = useState(false);
   const [isRatingOpen, setIsRatingOpen] = useState(
     () => new URLSearchParams(window.location.search).get("edit") === "1",
   );
   const [isUserDetailsOpen, setIsUserDetailsOpen] = useState(false);
   const [isCriticDetailsOpen, setIsCriticDetailsOpen] = useState(false);
-  const savedRating = getSavedRating();
-  const [myRating, setMyRating] = useState(savedRating?.rating ?? "");
-  const [overallScore, setOverallScore] = useState(savedRating?.rating ?? "");
-  const [scores, setScores] = useState(savedRating?.scores || initialScores);
-  const [reviews, setReviews] = useState(savedRating?.reviews || initialReviews);
+  const [myRating, setMyRating] = useState("");
+  const [overallScore, setOverallScore] = useState("");
+  const [scores, setScores] = useState(initialScores);
+  const [reviews, setReviews] = useState(initialReviews);
+  const [userStats, setUserStats] = useState({
+    averageRating: null,
+    votesCount: 0,
+    aspectAverages: {},
+  });
+  const [ratingError, setRatingError] = useState("");
+
+  useEffect(() => {
+    if (!import.meta.env.VITE_API_URL) return;
+
+    const token = localStorage.getItem("descoreToken");
+    request(`/ratings/${gameId}`)
+      .then(setUserStats)
+      .catch((error) => setRatingError(error.message));
+
+    if (token) {
+      request(`/ratings/me/${gameId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((mine) => {
+          if (mine.rating !== null) {
+            setMyRating(mine.rating);
+            setOverallScore(mine.rating);
+            setScores({
+              gameplay: mine.aspects?.gameplay ?? "",
+              story: mine.aspects?.story ?? "",
+              design: mine.aspects?.design ?? "",
+              music: mine.aspects?.music ?? "",
+            });
+            setReviews(mine.reviews || initialReviews);
+          }
+        })
+        .catch((error) => setRatingError(error.message));
+    }
+  }, [request]);
 
   function updateScore(name, value) {
     const nextValue = value === "" ? "" : Math.max(1, Math.min(10, Number(value)));
@@ -79,13 +101,24 @@ function GamePage() {
     setReviews((current) => ({ ...current, [name]: value }));
   }
 
-  function submitRating(event) {
+  async function submitRating(event) {
     event.preventDefault();
+    const token = localStorage.getItem("descoreToken");
+    if (import.meta.env.VITE_API_URL && !token) {
+      setAuthNotice(true);
+      return;
+    }
+
     const scoredValues = Object.values(scores).filter(Boolean);
     const averageScore =
       scoredValues.reduce((total, score) => total + Number(score), 0) / scoredValues.length || 0;
-    const finalRating = overallScore || (averageScore ? Number(averageScore.toFixed(1)) : "");
+    const finalRating = Number(overallScore) || Math.round(averageScore);
+    if (!Number.isInteger(finalRating) || finalRating < 1 || finalRating > 10) {
+      setRatingError("Введіть оцінку від 1 до 10");
+      return;
+    }
     const rating = {
+      gameId,
       title: gameTitle,
       image: gameImage,
       date: new Date().toLocaleDateString("uk-UA", {
@@ -106,39 +139,74 @@ function GamePage() {
       ),
     };
 
-    let savedRatings;
     try {
-      const parsedRatings = JSON.parse(localStorage.getItem(ratingsStorageKey) || "[]");
-      savedRatings = Array.isArray(parsedRatings) ? parsedRatings : [];
-    } catch {
-      savedRatings = [];
-    }
+      if (import.meta.env.VITE_API_URL) {
+        await request("/ratings", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            gameId,
+            rating: Number(finalRating),
+            aspects: {
+              gameplay: Number(scores.gameplay) || finalRating,
+              story: Number(scores.story) || finalRating,
+              design: Number(scores.design) || finalRating,
+              music: Number(scores.music) || finalRating,
+            },
+            reviews: rating.reviews,
+          }),
+        });
+        setUserStats(await request(`/ratings/${gameId}`));
+      }
 
-    const updatedRatings = [
-      rating,
-      ...savedRatings.filter((savedRating) => savedRating.title !== gameTitle),
-    ];
-    localStorage.setItem(ratingsStorageKey, JSON.stringify(updatedRatings));
-    const deletedGames = JSON.parse(localStorage.getItem(deletedGamesStorageKey) || "[]");
-    localStorage.setItem(
-      deletedGamesStorageKey,
-      JSON.stringify(deletedGames.filter((title) => title !== gameTitle)),
-    );
-    setMyRating(rating.rating);
-    setIsRatingOpen(false);
+      let savedRatings;
+      try {
+        const parsedRatings = JSON.parse(localStorage.getItem(ratingsStorageKey) || "[]");
+        savedRatings = Array.isArray(parsedRatings) ? parsedRatings : [];
+      } catch {
+        savedRatings = [];
+      }
+
+      const updatedRatings = [
+        rating,
+        ...savedRatings.filter((savedRating) => savedRating.title !== gameTitle),
+      ];
+      localStorage.setItem(ratingsStorageKey, JSON.stringify(updatedRatings));
+      const deletedGames = JSON.parse(localStorage.getItem(deletedGamesStorageKey) || "[]");
+      localStorage.setItem(
+        deletedGamesStorageKey,
+        JSON.stringify(deletedGames.filter((title) => title !== gameTitle)),
+      );
+      setMyRating(rating.rating);
+      setOverallScore("");
+      setScores(initialScores);
+      setReviews(initialReviews);
+      setIsRatingOpen(false);
+    } catch (error) {
+      setRatingError(error.message);
+    }
   }
 
   return (
     <div className={styles["game-page"]}>
       <Header
         isRegistered={isRegistered}
-        onAccountClick={() => setIsAccountOpen(true)}
-        onLoggedOut={() => setIsRegistered(false)}
+        onRegisterClick={() => {
+          setAccountMode("register");
+          setIsAccountOpen(true);
+        }}
+        onLoggedOut={() => {
+          setIsRegistered(false);
+          setMyRating("");
+          setOverallScore("");
+        }}
         onProfileClick={() => {}}
         onLogoClick={() => {}}
       />
       <AccountModal
+        key={accountMode}
         isOpen={isAccountOpen}
+        mode={accountMode}
         onClose={() => setIsAccountOpen(false)}
         onRegistered={() => {
           setIsRegistered(true);
@@ -170,6 +238,7 @@ function GamePage() {
         </div>
         <p className={styles["platform"]}>PC | Доступна на: Всі платформи</p>
         <p className={styles["release"]}>Реліз: 4 вересня 2025</p>
+        {ratingError && <p className={styles["auth-notice"]}>{ratingError}</p>}
       </header>
 
       <main className={styles["main-content"]}>
@@ -196,7 +265,7 @@ function GamePage() {
             </div>
             <div className={styles["score"] + " " + styles["userscore"]}>
               <span className={styles["label"]}>Оцінка користувачів</span>
-              <span className={styles["value"]}>8.6</span>
+              <span className={styles["value"]}>{userStats.averageRating ?? "—"}</span>
               <button
                 type="button"
                 className={styles["details-link"]}
@@ -204,11 +273,11 @@ function GamePage() {
               >
                 Глянути детально
               </button>
-              <span className={styles["user-count"]}>6939 оцінок</span>
+              <span className={styles["user-count"]}>{userStats.votesCount} оцінок</span>
             </div>
             <div className={styles["score"] + " " + styles["myscore"]}>
               <span className={styles["label"]}>Моя оцінка</span>
-              <span className={styles["value"]}>{myRating || "—"}</span>
+              <span className={styles["value"]}>{isRegistered && myRating ? myRating : "—"}</span>
               <p className={styles["note"]}></p>
             </div>
           </div>
@@ -268,7 +337,12 @@ function GamePage() {
             >
               &times;
             </button>
-            <h2>🎮 Оцінка гри</h2>
+            <h2>Оцінка гри</h2>
+            {ratingError && (
+              <p className={styles["auth-notice"]} role="alert">
+                {ratingError}
+              </p>
+            )}
             <div className={styles["overall-rating-field"]}>
               <label htmlFor="overallScore">Загальна оцінка гри (1–10)</label>
               <input
@@ -347,10 +421,15 @@ function GamePage() {
               &times;
             </button>
             <h2>Оцінки аспектів гри</h2>
-            {Object.entries(userAspectScores).map(([aspect, score]) => (
+            {[
+              ["Геймплей", userStats.aspectAverages.gameplay],
+              ["Сюжет", userStats.aspectAverages.story],
+              ["Графіка/Дизайн", userStats.aspectAverages.design],
+              ["Музика", userStats.aspectAverages.music],
+            ].map(([aspect, score]) => (
               <div className={styles["rating-detail"]} key={aspect}>
                 <span>{aspect}</span>
-                <strong>{score}/10</strong>
+                <strong>{score ?? "—"}/10</strong>
               </div>
             ))}
           </div>

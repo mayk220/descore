@@ -17,6 +17,12 @@ dist-ssr
 /lab2_photos/
 /backend/data/users.json
 /backend/data/ratings.json
+/backend/.env
+/backend/.env.*
+!/backend/.env.example
+/.env
+/.env.*
+!/.env.example
 
 # Editor directories and files
 .vscode/*

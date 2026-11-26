@@ -1,23 +1,18 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const fs = require("fs");
-const path = require("path");
+const db = require("../db");
 const { jwtSecret, requireAuth } = require("../middleware/authMiddleware");
 
 const router = express.Router();
-const usersFile = path.join(__dirname, "..", "data", "users.json");
-
-function readUsers() {
-  return JSON.parse(fs.readFileSync(usersFile, "utf8"));
-}
-
-function writeUsers(users) {
-  fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
-}
 
 function userWithoutPassword(user) {
-  return { id: user.id, email: user.email, username: user.username };
+  return {
+    id: user.id,
+    email: user.email,
+    username: user.username,
+    avatar: user.avatar || "",
+  };
 }
 
 function getToken(user) {
@@ -26,7 +21,6 @@ function getToken(user) {
 
 router.post("/register", async (req, res) => {
   const { email, username, password } = req.body || {};
-
   if (
     typeof email !== "string" ||
     typeof username !== "string" ||
@@ -40,38 +34,55 @@ router.post("/register", async (req, res) => {
     });
   }
 
-  const users = readUsers();
   const normalizedEmail = email.trim().toLowerCase();
   const normalizedUsername = username.trim();
-
-  if (users.some((user) => user.email === normalizedEmail)) {
+  const [existingEmail] = await db.execute("SELECT id FROM users WHERE email = ? LIMIT 1", [
+    normalizedEmail,
+  ]);
+  if (existingEmail.length > 0) {
     return res.status(409).json({ message: "Цей email уже використовується" });
   }
-  if (users.some((user) => user.username.toLowerCase() === normalizedUsername.toLowerCase())) {
+
+  const [existingUsername] = await db.execute(
+    "SELECT id FROM users WHERE username = ? LIMIT 1",
+    [normalizedUsername],
+  );
+  if (existingUsername.length > 0) {
     return res.status(409).json({ message: "Email або username уже використовується" });
   }
 
-  const user = {
-    id: users.reduce((maxId, currentUser) => Math.max(maxId, currentUser.id), 0) + 1,
-    email: normalizedEmail,
-    username: normalizedUsername,
-    passwordHash: await bcrypt.hash(password, 10),
-  };
-
-  users.push(user);
-  writeUsers(users);
-
-  return res.status(201).json({ ...userWithoutPassword(user), token: getToken(user) });
+  try {
+    const passwordHash = await bcrypt.hash(password, 10);
+    const [result] = await db.execute(
+      "INSERT INTO users (email, username, password_hash) VALUES (?, ?, ?)",
+      [normalizedEmail, normalizedUsername, passwordHash],
+    );
+    const [rows] = await db.execute(
+      "SELECT id, email, username, avatar FROM users WHERE id = ?",
+      [result.insertId],
+    );
+    const user = rows[0];
+    return res.status(201).json({ ...userWithoutPassword(user), token: getToken(user) });
+  } catch (error) {
+    if (error.code === "ER_DUP_ENTRY") {
+      return res.status(409).json({ message: "Email або username уже використовується" });
+    }
+    throw error;
+  }
 });
 
 router.post("/login", async (req, res) => {
   const { email, password } = req.body || {};
-
   if (typeof email !== "string" || typeof password !== "string") {
     return res.status(400).json({ message: "Email і пароль обов'язкові" });
   }
 
-  const user = readUsers().find((candidate) => candidate.email === email.trim().toLowerCase());
+  const [rows] = await db.execute(
+    `SELECT id, email, username, password_hash AS passwordHash, avatar
+     FROM users WHERE email = ? LIMIT 1`,
+    [email.trim().toLowerCase()],
+  );
+  const user = rows[0];
   if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
     return res.status(401).json({ message: "Неправильний email або пароль" });
   }
@@ -79,42 +90,66 @@ router.post("/login", async (req, res) => {
   return res.json({ ...userWithoutPassword(user), token: getToken(user) });
 });
 
-router.patch("/me", requireAuth, (req, res) => {
-  const { username = "", email = "" } = req.body || {};
-  if (typeof username !== "string" || typeof email !== "string") {
+router.patch("/me", requireAuth, async (req, res) => {
+  const { username = "", email = "", avatar = "" } = req.body || {};
+  if (
+    typeof username !== "string" ||
+    typeof email !== "string" ||
+    typeof avatar !== "string"
+  ) {
     return res.status(400).json({ message: "Username і email обов'язкові" });
   }
+
   const newUsername = username.trim();
   const newEmail = email.trim().toLowerCase();
-
   if (!newUsername || !newEmail) {
     return res.status(400).json({ message: "Username і email обов'язкові" });
   }
+  if (avatar.length > 2_500_000) {
+    return res.status(400).json({ message: "Фото завелике. Максимальний розмір — 2 МБ" });
+  }
 
-  const users = readUsers();
-  const currentUser = users.find((user) => user.id === req.user.userId);
-  if (!currentUser) {
+  const [currentUsers] = await db.execute(
+    "SELECT id FROM users WHERE id = ? LIMIT 1",
+    [req.user.userId],
+  );
+  if (currentUsers.length === 0) {
     return res.status(404).json({ message: "Користувача не знайдено" });
   }
 
-  const usernameTaken = users.some(
-    (user) =>
-      user.id !== currentUser.id && user.username.toLowerCase() === newUsername.toLowerCase(),
+  const [existingUsername] = await db.execute(
+    "SELECT id FROM users WHERE username = ? AND id != ? LIMIT 1",
+    [newUsername, req.user.userId],
   );
-  if (usernameTaken) {
+  if (existingUsername.length > 0) {
     return res.status(409).json({ message: "Цей username уже використовується" });
   }
-
-  const emailTaken = users.some((user) => user.id !== currentUser.id && user.email === newEmail);
-  if (emailTaken) {
+  const [existingEmail] = await db.execute(
+    "SELECT id FROM users WHERE email = ? AND id != ? LIMIT 1",
+    [newEmail, req.user.userId],
+  );
+  if (existingEmail.length > 0) {
     return res.status(409).json({ message: "Цей email уже використовується" });
   }
 
-  currentUser.username = newUsername;
-  currentUser.email = newEmail;
-  writeUsers(users);
+  try {
+    await db.execute(
+      "UPDATE users SET username = ?, email = ?, avatar = ? WHERE id = ?",
+      [newUsername, newEmail, avatar, req.user.userId],
+    );
+  } catch (error) {
+    if (error.code === "ER_DUP_ENTRY") {
+      return res.status(409).json({ message: "Email або username уже використовується" });
+    }
+    throw error;
+  }
 
-  return res.json({ ...userWithoutPassword(currentUser), token: getToken(currentUser) });
+  const [rows] = await db.execute(
+    "SELECT id, email, username, avatar FROM users WHERE id = ?",
+    [req.user.userId],
+  );
+  const user = rows[0];
+  return res.json({ ...userWithoutPassword(user), token: getToken(user) });
 });
 
 module.exports = router;

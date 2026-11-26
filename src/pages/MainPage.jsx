@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "../components/Header";
 import AccountModal from "../components/AccountModal";
-import styles from "./MainPage.module.css";
+import styles from "../styles/MainPage.module.css";
 
 const games = [
   {
@@ -78,13 +78,25 @@ const editorials = [
 
 function MainPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isRegistered, setIsRegistered] = useState(() => Boolean(localStorage.getItem("userName")));
+  const [accountMode, setAccountMode] = useState("register");
+  const [isRegistered, setIsRegistered] = useState(
+    () => Boolean(localStorage.getItem("userName") && localStorage.getItem("descoreToken")),
+  );
 
   return (
     <>
-      <Header isRegistered={isRegistered} onAccountClick={() => setIsModalOpen(true)} />
+      <Header
+        isRegistered={isRegistered}
+        onRegisterClick={() => {
+          setAccountMode("register");
+          setIsModalOpen(true);
+        }}
+        onLoggedOut={() => setIsRegistered(false)}
+      />
       <AccountModal
+        key={accountMode}
         isOpen={isModalOpen}
+        mode={accountMode}
         onClose={() => setIsModalOpen(false)}
         onRegistered={() => setIsRegistered(true)}
       />
