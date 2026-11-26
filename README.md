@@ -10,6 +10,7 @@ React-застосунок для перегляду оцінок і матер�
 
 - React 19 + React DOM
 - Vite
+- Cypress Component Testing + Istanbul coverage
 - ESLint
 - Prettier
 - Husky + lint-staged для Git hooks
@@ -64,7 +65,7 @@ VITE_API_URL=http://localhost:3000
 
 ```text
 src/
-  components/       Повторно використовувані React-компоненти та component-тести
+  components/       Повторно використовувані React-компоненти
   pages/            Основні сторінки застосунку
   styles/           Стилі окремих сторінок
   App.jsx           Маршрутизація сторінок
@@ -74,6 +75,9 @@ backend/
   routes/           Маршрути авторизації та оцінок
   data/             JSON-файли локального сховища
   server.js         Express-сервер і підключення API
+cypress/
+  component/        Cypress-компонентні тести
+  support/          Налаштування Cypress і React mount
 eslint.config.js    Конфігурація ESLint
 .prettierrc         Правила форматування
 .husky/pre-commit   Перевірки перед commit
@@ -82,11 +86,15 @@ eslint.config.js    Конфігурація ESLint
 ## Команди
 
 ```bash
-npm run dev          # локальна розробка
-npm run lint         # ESLint
-npm run format       # форматування Prettier
-npm run format:check # перевірка форматування
-npm run build        # production-збірка
+npm run dev                 # локальна розробка
+npm run lint                # ESLint
+npm run format              # форматування Prettier
+npm run format:check        # перевірка форматування
+npm run build               # production-збірка
+npm run test:component      # компонентні тести Cypress і звіт coverage
+npm run test:component:open # інтерактивний режим Cypress
 ```
+
+Звіт code coverage генерується в `coverage/index.html`.
 
 Перед кожним commit Husky запускає lint-staged: ESLint і Prettier перевіряють змінені файли.

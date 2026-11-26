@@ -5,7 +5,14 @@ import globals from "globals";
 
 export default [
   {
-    ignores: ["dist", "node_modules"],
+    ignores: [
+      "dist",
+      "node_modules",
+      "coverage",
+      ".nyc_output",
+      "cypress/screenshots",
+      "cypress/videos",
+    ],
   },
   js.configs.recommended,
   {
@@ -28,6 +35,17 @@ export default [
     rules: {
       ...reactHooks.configs.flat.recommended.rules,
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+    },
+  },
+  {
+    files: ["cypress/**/*.js", "cypress/**/*.jsx"],
+    languageOptions: {
+      globals: {
+        ...globals.mocha,
+        Cypress: "readonly",
+        cy: "readonly",
+        expect: "readonly",
+      },
     },
   },
 ];
